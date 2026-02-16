@@ -12,4 +12,4 @@ spring:
     ollama:
       base-url: http://localhost:11434
       chat:
-        model: llama3 # lub inny model, który masz pobrany w Ollama
+        model: SpeakLeash/bielik-11b-v3.0-instruct:bf16

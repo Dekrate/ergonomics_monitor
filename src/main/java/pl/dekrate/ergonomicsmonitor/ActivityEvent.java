@@ -8,6 +8,12 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Domain entity representing a captured or aggregated activity event.
+ * Maps to the <code>activity_events</code> table in the PostgreSQL database.
+ * <p>
+ * Supports both raw hardware events and aggregated summary events.
+ */
 @Table("activity_events")
 public class ActivityEvent {
 
@@ -19,8 +25,14 @@ public class ActivityEvent {
     private double intensity;
     private Map<String, Object> metadata;
 
+    /**
+     * Default constructor for R2DBC deserialization.
+     */
     public ActivityEvent() {}
 
+    /**
+     * Full constructor for creating instances manually.
+     */
     public ActivityEvent(UUID id, UUID userId, Instant timestamp, ActivityType type, double intensity, Map<String, Object> metadata) {
         this.id = id;
         this.userId = userId;
@@ -30,6 +42,10 @@ public class ActivityEvent {
         this.metadata = metadata;
     }
 
+    /**
+     * Returns a new builder instance for fluent object creation.
+     * @return a new ActivityEventBuilder
+     */
     public static ActivityEventBuilder builder() {
         return new ActivityEventBuilder();
     }
@@ -47,6 +63,9 @@ public class ActivityEvent {
     public Map<String, Object> getMetadata() { return metadata; }
     public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
 
+    /**
+     * Builder pattern implementation for ActivityEvent.
+     */
     public static class ActivityEventBuilder {
         private UUID id;
         private UUID userId;
