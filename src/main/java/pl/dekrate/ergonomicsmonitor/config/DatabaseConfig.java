@@ -11,7 +11,6 @@ import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;
 import org.springframework.data.r2dbc.dialect.PostgresDialect;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
-import org.springframework.lang.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,16 +38,19 @@ public class DatabaseConfig {
     public static class MapToJsonConverter implements Converter<Map<String, Object>, Json> {
         private final ObjectMapper objectMapper;
 
-        public MapToJsonConverter(ObjectMapper objectMapper) {
+        public MapToJsonConverter(final ObjectMapper objectMapper) {
             this.objectMapper = objectMapper;
         }
 
         @Override
-        public Json convert(@NonNull Map<String, Object> source) {
+        public Json convert(Map<String, Object> source) {
+            if (source == null) {
+                return null;
+            }
             try {
                 return Json.of(objectMapper.writeValueAsString(source));
             } catch (JsonProcessingException e) {
-                throw new RuntimeException("Error converting Map to JSON", e);
+                throw new JsonConversionException("Error converting Map to JSON", e);
             }
         }
     }
@@ -57,17 +59,19 @@ public class DatabaseConfig {
     public static class JsonToMapConverter implements Converter<Json, Map<String, Object>> {
         private final ObjectMapper objectMapper;
 
-        public JsonToMapConverter(ObjectMapper objectMapper) {
+        public JsonToMapConverter(final ObjectMapper objectMapper) {
             this.objectMapper = objectMapper;
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        public Map<String, Object> convert(@NonNull Json source) {
+        public Map<String, Object> convert(Json source) {
+            if (source == null) {
+                return null;
+            }
             try {
                 return objectMapper.readValue(source.asString(), Map.class);
             } catch (JsonProcessingException e) {
-                throw new RuntimeException("Error converting JSON to Map", e);
+                throw new JsonConversionException("Error converting JSON to Map", e);
             }
         }
     }

@@ -52,27 +52,21 @@ public class ActivityMonitor {
     /**
      * Internal callback for low-level keyboard events.
      */
-    private final LowLevelKeyboardProc keyboardProc = new LowLevelKeyboardProc() {
-        @Override
-        public WinDef.LRESULT callback(int nCode, WinDef.WPARAM wParam, WinUser.KBDLLHOOKSTRUCT info) {
-            if (nCode >= 0) {
-                eventSink.tryEmitNext(ActivityType.KEYBOARD);
-            }
-            return User32.INSTANCE.CallNextHookEx(hKeyboardHook, nCode, wParam, new LPARAM(Pointer.nativeValue(info.getPointer())));
+    private final LowLevelKeyboardProc keyboardProc = (nCode, wParam, info) -> {
+        if (nCode >= 0) {
+            eventSink.tryEmitNext(ActivityType.KEYBOARD);
         }
+        return User32.INSTANCE.CallNextHookEx(hKeyboardHook, nCode, wParam, new LPARAM(Pointer.nativeValue(info.getPointer())));
     };
 
     /**
      * Internal callback for low-level mouse events.
      */
-    private final LowLevelMouseProc mouseProc = new LowLevelMouseProc() {
-        @Override
-        public WinDef.LRESULT callback(int nCode, WinDef.WPARAM wParam, WinUser.MSLLHOOKSTRUCT info) {
-            if (nCode >= 0) {
-                eventSink.tryEmitNext(ActivityType.MOUSE);
-            }
-            return User32.INSTANCE.CallNextHookEx(hMouseHook, nCode, wParam, new LPARAM(Pointer.nativeValue(info.getPointer())));
+    private final LowLevelMouseProc mouseProc = (nCode, wParam, info) -> {
+        if (nCode >= 0) {
+            eventSink.tryEmitNext(ActivityType.MOUSE);
         }
+        return User32.INSTANCE.CallNextHookEx(hMouseHook, nCode, wParam, new LPARAM(Pointer.nativeValue(info.getPointer())));
     };
 
     /**
@@ -132,11 +126,11 @@ public class ActivityMonitor {
                 .id(UUID.randomUUID())
                 .timestamp(Instant.now())
                 .type(ActivityType.SYSTEM_EVENT)
-                .intensity((double) types.size())
+                .intensity(types.size())
                 .metadata(Map.of(
                         "keyboard_count", keyboards,
                         "mouse_count", mice,
-                        "total_count", types.size()
+                        "total_count", (long) types.size()
                 ))
                 .build();
     }

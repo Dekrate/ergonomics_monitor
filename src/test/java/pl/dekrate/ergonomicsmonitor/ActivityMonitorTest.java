@@ -36,7 +36,7 @@ class ActivityMonitorTest {
         assertEquals(4.0, result.getIntensity());
         assertEquals(3L, result.getMetadata().get("keyboard_count"));
         assertEquals(1L, result.getMetadata().get("mouse_count"));
-        assertEquals(4, result.getMetadata().get("total_count"));
+        assertEquals(4L, result.getMetadata().get("total_count"));
         assertEquals(ActivityType.SYSTEM_EVENT, result.getType());
     }
 }

@@ -13,3 +13,14 @@ spring:
       base-url: http://localhost:11434
       chat:
         model: SpeakLeash/bielik-11b-v3.0-instruct:bf16
+
+ergonomics:
+  break-check:
+    # Cron expression: every minute
+    cron: "0 * * * * *"
+  notifications:
+    windows:
+      enabled: true
+    log-only:
+      enabled: false
+

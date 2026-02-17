@@ -6,6 +6,7 @@ import pl.dekrate.ergonomicsmonitor.model.ActivityType;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -15,58 +16,79 @@ import java.util.UUID;
  * Supports both raw hardware events and aggregated summary events.
  */
 @Table("activity_events")
-public class ActivityEvent {
+public final class ActivityEvent {
 
     @Id
-    private UUID id;
-    private UUID userId;
-    private Instant timestamp;
-    private ActivityType type;
-    private double intensity;
-    private Map<String, Object> metadata;
+    private final UUID id;
+    private final UUID userId;
+    private final Instant timestamp;
+    private final ActivityType type;
+    private final double intensity;
+    private final Map<String, Object> metadata;
 
-    /**
-     * Default constructor for R2DBC deserialization.
-     */
-    public ActivityEvent() {}
-
-    /**
-     * Full constructor for creating instances manually.
-     */
-    public ActivityEvent(UUID id, UUID userId, Instant timestamp, ActivityType type, double intensity, Map<String, Object> metadata) {
-        this.id = id;
-        this.userId = userId;
-        this.timestamp = timestamp;
-        this.type = type;
-        this.intensity = intensity;
-        this.metadata = metadata;
+    private ActivityEvent(Builder builder) {
+        this.id = builder.id;
+        this.userId = builder.userId;
+        this.timestamp = Objects.requireNonNull(builder.timestamp, "timestamp cannot be null");
+        this.type = Objects.requireNonNull(builder.type, "type cannot be null");
+        this.intensity = builder.intensity;
+        this.metadata = builder.metadata;
     }
 
-    /**
-     * Returns a new builder instance for fluent object creation.
-     * @return a new ActivityEventBuilder
-     */
-    public static ActivityEventBuilder builder() {
-        return new ActivityEventBuilder();
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
-    public Instant getTimestamp() { return timestamp; }
-    public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
-    public ActivityType getType() { return type; }
-    public void setType(ActivityType type) { this.type = type; }
-    public double getIntensity() { return intensity; }
-    public void setIntensity(double intensity) { this.intensity = intensity; }
-    public Map<String, Object> getMetadata() { return metadata; }
-    public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
+    public UUID getId() {
+        return id;
+    }
 
-    /**
-     * Builder pattern implementation for ActivityEvent.
-     */
-    public static class ActivityEventBuilder {
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public ActivityType getType() {
+        return type;
+    }
+
+    public double getIntensity() {
+        return intensity;
+    }
+
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ActivityEvent that = (ActivityEvent) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "ActivityEvent{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", timestamp=" + timestamp +
+                ", type=" + type +
+                ", intensity=" + intensity +
+                ", metadata=" + metadata +
+                '}';
+    }
+
+    public static class Builder {
         private UUID id;
         private UUID userId;
         private Instant timestamp;
@@ -74,15 +96,40 @@ public class ActivityEvent {
         private double intensity;
         private Map<String, Object> metadata;
 
-        public ActivityEventBuilder id(UUID id) { this.id = id; return this; }
-        public ActivityEventBuilder userId(UUID userId) { this.userId = userId; return this; }
-        public ActivityEventBuilder timestamp(Instant timestamp) { this.timestamp = timestamp; return this; }
-        public ActivityEventBuilder type(ActivityType type) { this.type = type; return this; }
-        public ActivityEventBuilder intensity(double intensity) { this.intensity = intensity; return this; }
-        public ActivityEventBuilder metadata(Map<String, Object> metadata) { this.metadata = metadata; return this; }
+        private Builder() {}
+
+        public Builder id(UUID id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder userId(UUID userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder timestamp(Instant timestamp) {
+            this.timestamp = timestamp;
+            return this;
+        }
+
+        public Builder type(ActivityType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder intensity(double intensity) {
+            this.intensity = intensity;
+            return this;
+        }
+
+        public Builder metadata(Map<String, Object> metadata) {
+            this.metadata = metadata;
+            return this;
+        }
 
         public ActivityEvent build() {
-            return new ActivityEvent(id, userId, timestamp, type, intensity, metadata);
+            return new ActivityEvent(this);
         }
     }
 }

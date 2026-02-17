@@ -19,7 +19,7 @@ public class ActivityController {
 
     /**
      * Pobiera strumień ostatnich 10 zdarzeń.
-     * Dzięki WebFlux, połączenie pozostaje otwarte tylko tyle, ile trzeba,
+     * Dzięki WebFlux połączenie pozostaje otwarte tylko tyle, ile trzeba,
      * nie blokując wątków serwera.
      */
     @GetMapping("/recent")

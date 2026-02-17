@@ -9,14 +9,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 public interface ActivityRepository extends R2dbcRepository<ActivityEvent, UUID> {
-	@Query("""
+    @Query("""
         SELECT * FROM activity_events 
         WHERE user_id = :userId 
         AND timestamp > :since 
         ORDER BY timestamp DESC
     """)
-	Flux<ActivityEvent> findRecentActivity(UUID userId, Instant since);
-	@Query("""
+    Flux<ActivityEvent> findRecentActivity(UUID userId, Instant since);
+    @Query("""
         SELECT 
             date_trunc('minute', timestamp) as minute,
             AVG(intensity) as avg_intensity,
@@ -27,5 +27,5 @@ public interface ActivityRepository extends R2dbcRepository<ActivityEvent, UUID>
         GROUP BY date_trunc('minute', timestamp)
         ORDER BY minute
     """)
-	Flux<ActivitySummary> getIntensityTimeline(UUID userId, Instant since);
+    Flux<ActivitySummary> getIntensityTimeline(UUID userId, Instant since);
 }

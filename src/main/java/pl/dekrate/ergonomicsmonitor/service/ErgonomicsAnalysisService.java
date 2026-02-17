@@ -26,6 +26,16 @@ public class ErgonomicsAnalysisService {
     private final ActivityEventRepository repository;
     private final ChatClient chatClient;
 
+    private static final String PROMPT_TEMPLATE = """
+            You are an ergonomics expert. Analyze the following user activity data from the last few minutes:
+            %s
+            
+            Based on the intensity and frequency of keyboard/mouse events, provide a brief (2 sentences) assessment:
+            1. Is the user at risk of RSI (Repetitive Strain Injury) or fatigue?
+            2. Should they take a break?
+            Respond in English.
+            """;
+
     /**
      * Constructs the analysis service.
      * 
@@ -59,15 +69,7 @@ public class ErgonomicsAnalysisService {
                                     e.getTimestamp(), e.getType(), e.getIntensity(), e.getMetadata()))
                             .collect(Collectors.joining("\n"));
 
-                    String prompt = """
-                            You are an ergonomics expert. Analyze the following user activity data from the last few minutes:
-                            %s
-                            
-                            Based on the intensity and frequency of keyboard/mouse events, provide a brief (2 sentences) assessment:
-                            1. Is the user at risk of RSI (Repetitive Strain Injury) or fatigue?
-                            2. Should they take a break?
-                            Respond in English.
-                            """.formatted(dataSummary);
+                    String prompt = PROMPT_TEMPLATE.formatted(dataSummary);
 
                     return Mono.fromCallable(() -> chatClient.prompt(prompt).call().content());
                 })
