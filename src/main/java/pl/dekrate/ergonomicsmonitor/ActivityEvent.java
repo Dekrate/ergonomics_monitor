@@ -1,6 +1,9 @@
 package pl.dekrate.ergonomicsmonitor;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 import pl.dekrate.ergonomicsmonitor.model.ActivityType;
 
@@ -16,7 +19,7 @@ import java.util.UUID;
  * Supports both raw hardware events and aggregated summary events.
  */
 @Table("activity_events")
-public final class ActivityEvent {
+public final class ActivityEvent implements Persistable<UUID> {
 
     @Id
     private final UUID id;
@@ -25,6 +28,19 @@ public final class ActivityEvent {
     private final ActivityType type;
     private final double intensity;
     private final Map<String, Object> metadata;
+    @Transient
+    private final boolean isNew;
+
+    @PersistenceCreator
+    public ActivityEvent(UUID id, UUID userId, Instant timestamp, ActivityType type, double intensity, Map<String, Object> metadata) {
+        this.id = id;
+        this.userId = userId;
+        this.timestamp = Objects.requireNonNull(timestamp, "timestamp cannot be null");
+        this.type = Objects.requireNonNull(type, "type cannot be null");
+        this.intensity = intensity;
+        this.metadata = metadata;
+        this.isNew = false; // Loaded from database
+    }
 
     private ActivityEvent(Builder builder) {
         this.id = builder.id;
@@ -33,12 +49,14 @@ public final class ActivityEvent {
         this.type = Objects.requireNonNull(builder.type, "type cannot be null");
         this.intensity = builder.intensity;
         this.metadata = builder.metadata;
+        this.isNew = builder.isNew;
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
+    @Override
     public UUID getId() {
         return id;
     }
@@ -61,6 +79,12 @@ public final class ActivityEvent {
 
     public Map<String, Object> getMetadata() {
         return metadata;
+    }
+
+
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 
     @Override
@@ -95,6 +119,7 @@ public final class ActivityEvent {
         private ActivityType type;
         private double intensity;
         private Map<String, Object> metadata;
+        private boolean isNew = true; // domyślnie nowe encje
 
         private Builder() {}
 
@@ -125,6 +150,11 @@ public final class ActivityEvent {
 
         public Builder metadata(Map<String, Object> metadata) {
             this.metadata = metadata;
+            return this;
+        }
+
+        public Builder markAsExisting() {
+            this.isNew = false;
             return this;
         }
 

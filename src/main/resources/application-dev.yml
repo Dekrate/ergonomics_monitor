@@ -22,30 +22,24 @@ spring:
     ollama:
       base-url: http://localhost:11434
       chat:
-        model: SpeakLeash/bielik-11b-v3.0-instruct:bf16
+        model: bielik
         options:
           temperature: 0.7
           max-tokens: 500
 
+server:
+  port: 8081
+
 ergonomics:
   break-check:
-    # Cron expression: every minute
-    cron: "0 * * * * *"
+    cron: "0 * * * * *"  # Co minutę
   notifications:
     windows:
       enabled: true
     log-only:
       enabled: false
-  websocket:
-    enabled: true
-    path: "/ws/activity"
-  dashboard:
-    metrics:
-      cache-duration-minutes: 5
-      max-events-per-query: 1000
 
 logging:
   level:
-    pl.dekrate.ergonomicsmonitor: DEBUG
-    org.flywaydb: INFO
-
+    pl.dekrate.ergonomicsmonitor: INFO
+    org.springframework.r2dbc: DEBUG

@@ -6,6 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * Main Spring Boot application class for Ergonomics Monitor.
  *
+ * This class serves as the entry point for the Spring Boot application
+ * and enables auto-configuration, component scanning, and configuration.
+ *
  * @author dekrate
  * @version 1.0
  */
@@ -13,10 +16,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ErgonomicsMonitorApplication {
 
     /**
-     * Private constructor to prevent instantiation.
+     * Default constructor for Spring Boot.
      */
-    private ErgonomicsMonitorApplication() {
-        throw new UnsupportedOperationException("Utility class");
+    public ErgonomicsMonitorApplication() {
+        // Default constructor for Spring instantiation
     }
 
     /**

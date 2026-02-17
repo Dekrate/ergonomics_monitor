@@ -179,6 +179,7 @@ class PomodoroIntensityStrategyTest {
         // given
         ActivityEvent eventWithNullMetadata = ActivityEvent.builder()
                 .id(UUID.randomUUID())
+                .userId(UUID.randomUUID())
                 .timestamp(Instant.now())
                 .type(ActivityType.SYSTEM_EVENT)
                 .intensity(100.0)
@@ -202,6 +203,7 @@ class PomodoroIntensityStrategyTest {
         // given
         ActivityEvent event = ActivityEvent.builder()
                 .id(UUID.randomUUID())
+                .userId(UUID.randomUUID())
                 .timestamp(Instant.now())
                 .type(ActivityType.SYSTEM_EVENT)
                 .intensity(100.0)
@@ -236,6 +238,7 @@ class PomodoroIntensityStrategyTest {
     private ActivityEvent createEvent(long totalCount, long keyboardCount, long mouseCount) {
         return ActivityEvent.builder()
                 .id(UUID.randomUUID())
+                .userId(UUID.randomUUID())
                 .timestamp(Instant.now())
                 .type(ActivityType.SYSTEM_EVENT)
                 .intensity((double) totalCount)

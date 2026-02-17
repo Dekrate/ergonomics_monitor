@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.dekrate.ergonomicsmonitor.ActivityEvent;
 import pl.dekrate.ergonomicsmonitor.model.*;
-import pl.dekrate.ergonomicsmonitor.repository.ActivityEventRepository;
+import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
 import pl.dekrate.ergonomicsmonitor.service.notification.BreakNotifier;
 import pl.dekrate.ergonomicsmonitor.service.strategy.IntensityAnalysisStrategy;
 import reactor.core.publisher.Flux;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.*;
 class BreakNotificationServiceTest {
 
     @Mock
-    private ActivityEventRepository repository;
+    private ActivityRepository repository;
 
     @Mock
     private IntensityAnalysisStrategy strategy;
@@ -221,6 +221,7 @@ class BreakNotificationServiceTest {
     private ActivityEvent createMockEvent() {
         return ActivityEvent.builder()
                 .id(UUID.randomUUID())
+                .userId(UUID.randomUUID())
                 .timestamp(Instant.now())
                 .type(ActivityType.SYSTEM_EVENT)
                 .intensity(100.0)

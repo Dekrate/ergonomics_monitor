@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import pl.dekrate.ergonomicsmonitor.model.ActivityType;
-import pl.dekrate.ergonomicsmonitor.repository.ActivityEventRepository;
+import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
+import com.github.f4b6a3.uuid.UuidCreator;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
@@ -37,15 +38,16 @@ import java.util.concurrent.Executors;
 public class ActivityMonitor {
 
     private static final Logger log = LoggerFactory.getLogger(ActivityMonitor.class);
-    
-    private final ActivityEventRepository repository;
+    private static final UUID SYSTEM_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+    private final ActivityRepository repository;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     private final Sinks.Many<ActivityType> eventSink = Sinks.many().multicast().onBackpressureBuffer();
     
     private HHOOK hKeyboardHook;
     private HHOOK hMouseHook;
 
-    public ActivityMonitor(ActivityEventRepository repository) {
+    public ActivityMonitor(ActivityRepository repository) {
         this.repository = repository;
     }
 
@@ -123,7 +125,8 @@ public class ActivityMonitor {
         long mice = types.stream().filter(t -> t == ActivityType.MOUSE).count();
 
         return ActivityEvent.builder()
-                .id(UUID.randomUUID())
+                .id(UuidCreator.getTimeOrderedEpoch())
+                .userId(SYSTEM_USER_ID)
                 .timestamp(Instant.now())
                 .type(ActivityType.SYSTEM_EVENT)
                 .intensity(types.size())

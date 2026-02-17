@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pl.dekrate.ergonomicsmonitor.ActivityEvent;
 import pl.dekrate.ergonomicsmonitor.model.BreakRecommendation;
-import pl.dekrate.ergonomicsmonitor.repository.ActivityEventRepository;
+import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
 import pl.dekrate.ergonomicsmonitor.service.notification.BreakNotifier;
 import pl.dekrate.ergonomicsmonitor.service.strategy.IntensityAnalysisStrategy;
 import reactor.core.publisher.Flux;
@@ -40,7 +40,7 @@ public class BreakNotificationService {
 
     private static final Duration MIN_TIME_BETWEEN_NOTIFICATIONS = Duration.ofMinutes(10);
 
-    private final ActivityEventRepository repository;
+    private final ActivityRepository repository;
     private final List<IntensityAnalysisStrategy> analysisStrategies;
     private final List<BreakNotifier> notifiers;
 
@@ -51,7 +51,7 @@ public class BreakNotificationService {
      * Spring automatically injects all beans implementing the interface types.
      */
     public BreakNotificationService(
-            ActivityEventRepository repository,
+            ActivityRepository repository,
             List<IntensityAnalysisStrategy> analysisStrategies,
             List<BreakNotifier> notifiers
     ) {

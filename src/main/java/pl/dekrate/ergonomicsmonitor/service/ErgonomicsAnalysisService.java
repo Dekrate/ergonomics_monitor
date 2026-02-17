@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import pl.dekrate.ergonomicsmonitor.repository.ActivityEventRepository;
+import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
 import reactor.core.publisher.Mono;
 
 import java.util.stream.Collectors;
@@ -23,7 +23,7 @@ public class ErgonomicsAnalysisService {
 
     private static final Logger log = LoggerFactory.getLogger(ErgonomicsAnalysisService.class);
     
-    private final ActivityEventRepository repository;
+    private final ActivityRepository repository;
     private final ChatClient chatClient;
 
     private static final String PROMPT_TEMPLATE = """
@@ -42,7 +42,7 @@ public class ErgonomicsAnalysisService {
      * @param repository the reactive repository for activity events
      * @param chatClientBuilder the builder for Spring AI ChatClient
      */
-    public ErgonomicsAnalysisService(ActivityEventRepository repository, ChatClient.Builder chatClientBuilder) {
+    public ErgonomicsAnalysisService(ActivityRepository repository, ChatClient.Builder chatClientBuilder) {
         this.repository = repository;
         this.chatClient = chatClientBuilder.build();
     }

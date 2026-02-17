@@ -8,7 +8,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pl.dekrate.ergonomicsmonitor.model.ActivityType;
-import pl.dekrate.ergonomicsmonitor.repository.ActivityEventRepository;
+import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
 import reactor.test.StepVerifier;
 
 import java.time.Instant;
@@ -31,7 +31,7 @@ class ActivityRepositoryIntegrationTest {
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @Autowired
-    private ActivityEventRepository repository;
+    private ActivityRepository repository;
 
     @Test
     void shouldSaveAndRetrieveEventWithMetadata() {

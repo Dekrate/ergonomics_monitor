@@ -51,6 +51,14 @@ public final class BreakRecommendation {
         return metrics;
     }
 
+    /**
+     * Convenience method to get break duration in minutes.
+     * @return duration in minutes
+     */
+    public int getDurationMinutes() {
+        return (int) suggestedBreakDuration.toMinutes();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -103,6 +111,16 @@ public final class BreakRecommendation {
 
         public Builder suggestedBreakDuration(Duration duration) {
             this.suggestedBreakDuration = duration;
+            return this;
+        }
+
+        /**
+         * Convenience method to set break duration in minutes.
+         * @param minutes duration in minutes
+         * @return this builder
+         */
+        public Builder durationMinutes(int minutes) {
+            this.suggestedBreakDuration = Duration.ofMinutes(minutes);
             return this;
         }
 

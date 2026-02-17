@@ -4,16 +4,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.dekrate.ergonomicsmonitor.ActivityEvent;
-import pl.dekrate.ergonomicsmonitor.repository.ActivityEventRepository;
+import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
 import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/api/activity")
 public class ActivityController {
 
-    private final ActivityEventRepository repository;
+    private final ActivityRepository repository;
 
-    public ActivityController(ActivityEventRepository repository) {
+    public ActivityController(ActivityRepository repository) {
         this.repository = repository;
     }
 

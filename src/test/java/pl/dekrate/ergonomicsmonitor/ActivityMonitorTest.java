@@ -2,7 +2,7 @@ package pl.dekrate.ergonomicsmonitor;
 
 import org.junit.jupiter.api.Test;
 import pl.dekrate.ergonomicsmonitor.model.ActivityType;
-import pl.dekrate.ergonomicsmonitor.repository.ActivityEventRepository;
+import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.mock;
  */
 class ActivityMonitorTest {
 
-    private final ActivityEventRepository repository = mock(ActivityEventRepository.class);
+    private final ActivityRepository repository = mock(ActivityRepository.class);
     private final ActivityMonitor monitor = new ActivityMonitor(repository);
 
     @Test
