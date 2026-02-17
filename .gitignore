@@ -16,6 +16,8 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+# Eclipse settings
+.settings/
 
 ### Java template
 # Compiled class file
@@ -122,4 +124,15 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+# Python files (if accidentally added)
+*.py
+__pycache__/
+*.pyc
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
 
