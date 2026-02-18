@@ -1,30 +1,30 @@
 package pl.dekrate.ergonomicsmonitor.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.ClientHttpRequestFactories;
-import org.springframework.boot.web.client.ClientHttpRequestFactorySettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.client.ReactorClientHttpConnector;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 
 /**
  * Konfiguracja Spring AI udostępniająca ziarno ChatClient.
- *
- * Konfiguruje ChatClient do analizy przerw zasilanej przez AI przy użyciu Ollama.
- * Ręcznie konfiguruje OllamaApi z wydłużonym czasem oczekiwania, aby wspierać lokalne modele LLM.
+ * Wymusza długi czas oczekiwania (5 min) dla lokalnych modeli LLM.
  */
 @Configuration
 public class SpringAiConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(SpringAiConfig.class);
 
     @Value("${spring.ai.ollama.base-url:http://localhost:11434}")
     private String baseUrl;
@@ -33,41 +33,37 @@ public class SpringAiConfig {
     private String modelName;
 
     /**
-     * Tworzy niestandardowy RestClient.Builder z wydłużonym timeoutem (5 minut).
+     * Konfiguruje współdzielony HttpClient z ekstremalnie długim timeoutem.
      */
+    private HttpClient getHttpClient() {
+        return HttpClient.create()
+                .responseTimeout(Duration.ofMinutes(5))
+                .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, 60000);
+    }
+
     @Bean
+    @Primary
     public RestClient.Builder ollamaRestClientBuilder() {
-        ClientHttpRequestFactory requestFactory = ClientHttpRequestFactories.get(ClientHttpRequestFactorySettings.DEFAULTS
-                .withConnectTimeout(Duration.ofSeconds(60))
-                .withReadTimeout(Duration.ofMinutes(5)));
-
-        return RestClient.builder().requestFactory(requestFactory);
+        log.info("Inicjalizacja RestClient.Builder z timeoutem 5 minut dla modelu: {}", modelName);
+        return RestClient.builder()
+                .requestFactory(new org.springframework.http.client.ReactorClientHttpRequestFactory(getHttpClient()));
     }
 
-    /**
-     * Tworzy niestandardowy WebClient.Builder z wydłużonym timeoutem (5 minut).
-     */
     @Bean
+    @Primary
     public WebClient.Builder ollamaWebClientBuilder() {
-        HttpClient httpClient = HttpClient.create()
-                .responseTimeout(Duration.ofMinutes(5));
-
         return WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient));
+                .clientConnector(new ReactorClientHttpConnector(getHttpClient()));
     }
 
-    /**
-     * Ręcznie konfiguruje OllamaApi przy użyciu niestandardowych builderów.
-     */
     @Bean
+    @Primary
     public OllamaApi ollamaApi(RestClient.Builder ollamaRestClientBuilder, WebClient.Builder ollamaWebClientBuilder) {
         return new OllamaApi(baseUrl, ollamaRestClientBuilder, ollamaWebClientBuilder);
     }
 
-    /**
-     * Tworzy OllamaChatModel przy użyciu niestandardowego OllamaApi.
-     */
     @Bean
+    @Primary
     public OllamaChatModel ollamaChatModel(OllamaApi ollamaApi) {
         return OllamaChatModel.builder()
                 .withOllamaApi(ollamaApi)
@@ -78,11 +74,10 @@ public class SpringAiConfig {
                 .build();
     }
 
-    /**
-     * Tworzy ziarno ChatClient do analizy AI przy użyciu niestandardowego ChatModel.
-     */
     @Bean
+    @Primary
     public ChatClient chatClient(OllamaChatModel chatModel) {
+        log.info("Utworzono ChatClient z modelem: {}", modelName);
         return ChatClient.builder(chatModel).build();
     }
 }
