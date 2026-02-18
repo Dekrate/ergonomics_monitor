@@ -22,7 +22,7 @@ spring:
     ollama:
       base-url: http://localhost:11434
       chat:
-        model: bielik
+        model: SpeakLeash/bielik-11b-v3.0-instruct:bf16
         options:
           temperature: 0.7
           max-tokens: 500

@@ -10,6 +10,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.stream.Collectors;
 
+import reactor.core.scheduler.Schedulers;
+
 /**
  * Service responsible for analyzing user activity data using Artificial Intelligence.
  * It periodically fetches aggregated data from the database and consults a local 
@@ -71,7 +73,8 @@ public class ErgonomicsAnalysisService {
 
                     String prompt = PROMPT_TEMPLATE.formatted(dataSummary);
 
-                    return Mono.fromCallable(() -> chatClient.prompt(prompt).call().content());
+                    return Mono.fromCallable(() -> chatClient.prompt(prompt).call().content())
+                            .subscribeOn(Schedulers.boundedElastic());
                 })
                 .subscribe(
                     result -> log.info("AI Analysis Result:\n{}", result),

@@ -11,12 +11,14 @@ import pl.dekrate.ergonomicsmonitor.model.ActivityIntensityMetrics;
 import pl.dekrate.ergonomicsmonitor.model.BreakRecommendation;
 import pl.dekrate.ergonomicsmonitor.model.BreakUrgency;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * AI-powered break recommendation strategy using Ollama LLM.
@@ -126,6 +128,8 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
         );
     }
 
+
+
     private Mono<String> queryAI(Map<String, Object> analysisData) {
         return Mono.fromCallable(() -> {
             log.debug("Querying AI with data: {}", analysisData);
@@ -137,6 +141,7 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
                     .call()
                     .content();
         })
+        .subscribeOn(Schedulers.boundedElastic())
         .doOnNext(response -> log.debug("AI response: {}", response));
     }
 
