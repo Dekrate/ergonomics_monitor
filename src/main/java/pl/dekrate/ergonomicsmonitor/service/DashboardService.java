@@ -120,7 +120,7 @@ public final class DashboardService {
 	 */
 	public Flux<Map<String, Object>> createRealTimeStream(UUID userId) {
 		return Flux.interval(Duration.ofSeconds(5))
-				.flatMap(tick -> generateRealTimeUpdate(userId))
+				.flatMap(_ -> generateRealTimeUpdate(userId))
 				.doOnNext(update ->
 						// Also broadcast via WebSocket
 						webSocketHandler.broadcastActivityUpdate(
