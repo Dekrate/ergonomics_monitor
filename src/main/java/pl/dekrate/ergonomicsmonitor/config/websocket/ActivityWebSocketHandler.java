@@ -1,11 +1,14 @@
 package pl.dekrate.ergonomicsmonitor.config.websocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
+import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,14 +22,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * WebSocket handler for real-time activity updates.
- *
+ * <p>
  * Manages WebSocket connections and streams activity data to connected clients.
  * Supports:
  * - Live activity event streaming
  * - Break recommendation notifications
  * - Connection management and cleanup
  * - JSON message serialization
- *
+ * <p>
  * Uses reactive streams for efficient real-time data delivery.
  *
  * @author dekrate
@@ -37,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ActivityWebSocketHandler implements WebSocketHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ActivityWebSocketHandler.class);
+    private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
     private final ObjectMapper objectMapper;
     private final Sinks.Many<ActivityUpdate> activitySink;
@@ -49,15 +53,13 @@ public final class ActivityWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
+    @NonNull
     public Mono<Void> handle(WebSocketSession session) {
         String sessionId = session.getId();
         log.info("WebSocket connection opened: {}", sessionId);
 
         // Store session for management
         activeSessions.put(sessionId, session);
-
-        // Send initial welcome message
-        Mono<Void> welcomeMessage = sendWelcomeMessage(session);
 
         // Stream activity updates to client
         Mono<Void> outputMono = session.send(
@@ -72,19 +74,18 @@ public final class ActivityWebSocketHandler implements WebSocketHandler {
             .map(this::serializeMessage)
             .map(session::textMessage)
             .doOnError(error -> log.error("Error sending WebSocket message", error))
-            .onErrorContinue((error, obj) -> log.warn("Continuing after WebSocket error: {}", error.getMessage()))
+            .onErrorContinue((error, _) -> log.warn("Continuing after WebSocket error: {}", error.getMessage()))
         );
 
         // Handle incoming messages (if any)
         Mono<Void> inputMono = session.receive()
-                .map(message -> message.getPayloadAsText())
+                .map(WebSocketMessage::getPayloadAsText)
                 .doOnNext(text -> handleIncomingMessage(sessionId, text))
                 .doOnError(error -> log.error("Error receiving WebSocket message", error))
                 .then();
 
         // Combine input and output, cleanup on completion
-        return Mono.zip(inputMono, outputMono)
-                .then()
+        return Mono.when(inputMono, outputMono)
                 .doFinally(signalType -> {
                     log.info("WebSocket connection closed: {} ({})", sessionId, signalType);
                     activeSessions.remove(sessionId);
@@ -108,14 +109,6 @@ public final class ActivityWebSocketHandler implements WebSocketHandler {
      */
     public int getActiveConnectionsCount() {
         return activeSessions.size();
-    }
-
-    private Mono<Void> sendWelcomeMessage(WebSocketSession session) {
-        return session.send(
-            Flux.just(createWelcomeMessage())
-                .map(this::serializeMessage)
-                .map(session::textMessage)
-        );
     }
 
     private ActivityUpdate createWelcomeMessage() {
@@ -146,7 +139,7 @@ public final class ActivityWebSocketHandler implements WebSocketHandler {
 
         // Handle client messages here (e.g., subscription preferences)
         try {
-            Map<String, Object> parsedMessage = objectMapper.readValue(message, Map.class);
+            Map<String, Object> parsedMessage = objectMapper.readValue(message, MAP_TYPE);
             String type = (String) parsedMessage.get("type");
 
             switch (type) {
