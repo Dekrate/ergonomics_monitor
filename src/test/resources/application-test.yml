@@ -1,0 +1,21 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  ai:
+    ollama:
+      enabled: false # Próba wyłączenia autokonfiguracji jeśli możliwe
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+  flyway:
+    enabled: false # Flyway często wymaga prawdziwego Postgresa
+
+ergonomics:
+  break-check:
+    cron: "-" # Wyłączenie harmonogramu w testach
+  notifications:
+    windows:
+      enabled: false
+    log-only:
+      enabled: true
