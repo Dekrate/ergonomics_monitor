@@ -13,9 +13,6 @@ public enum ActivityType {
     /** Mouse movement or click activity. */
     MOUSE,
 
-    /** No activity detected (idle time). */
-    IDLE,
-
-    /** System-generated aggregated event. */
+	/** System-generated aggregated event. */
     SYSTEM_EVENT
 }

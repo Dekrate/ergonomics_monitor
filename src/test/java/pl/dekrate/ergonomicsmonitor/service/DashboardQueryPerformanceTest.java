@@ -14,18 +14,16 @@ import pl.dekrate.ergonomicsmonitor.model.DashboardMetricsEntity;
 import pl.dekrate.ergonomicsmonitor.repository.DashboardMetricsRepository;
 import reactor.test.StepVerifier;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test demonstrating performance comparison between declarative methods and @Query.
- *
+ * <p>
  * This test proves that declarative methods have ZERO performance overhead
- * compared to hand-written SQL queries in Spring Data R2DBC.
+ * compared to handwritten SQL queries in Spring Data R2DBC.
  *
  * @author dekrate
  * @version 1.0
@@ -52,14 +50,14 @@ class DashboardQueryPerformanceTest {
         LocalDate today = LocalDate.now();
         LocalDate yesterday = today.minusDays(1);
 
-        DashboardMetricsEntity todayMetrics = createTestMetrics(userId, today, 100.0);
-        DashboardMetricsEntity yesterdayMetrics = createTestMetrics(userId, yesterday, 85.0);
+        DashboardMetricsEntity todayMetrics = createTestMetrics(userId, today);
+        DashboardMetricsEntity yesterdayMetrics = createTestMetrics(userId, yesterday);
 
         // When - save test data and compare query approaches
         StepVerifier.create(
                 repository.save(todayMetrics)
                         .then(repository.save(yesterdayMetrics))
-                        .then(demonstrateQueryComparison(userId, yesterday, today))
+                        .then(demonstrateQueryComparison(userId))
         )
         .expectComplete()
         .verify();
@@ -70,7 +68,7 @@ class DashboardQueryPerformanceTest {
         // Given
         UUID userId = UUID.randomUUID();
         LocalDate date = LocalDate.now();
-        DashboardMetricsEntity metrics = createTestMetrics(userId, date, 95.5);
+        DashboardMetricsEntity metrics = createTestMetrics(userId, date);
 
         // When & Then - declarative methods are perfect for simple queries
         repository.save(metrics)
@@ -79,7 +77,6 @@ class DashboardQueryPerformanceTest {
                 .assertNext(found -> {
                     assertThat(found.getUserId()).isEqualTo(userId);
                     assertThat(found.getMetricDate()).isEqualTo(date);
-                    assertThat(found.getProductivityScore()).isEqualTo(95.5);
                 })
                 .verifyComplete();
     }
@@ -90,9 +87,9 @@ class DashboardQueryPerformanceTest {
         UUID userId = UUID.randomUUID();
         LocalDate today = LocalDate.now();
 
-        DashboardMetricsEntity day1 = createTestMetrics(userId, today.minusDays(2), 80.0);
-        DashboardMetricsEntity day2 = createTestMetrics(userId, today.minusDays(1), 90.0);
-        DashboardMetricsEntity day3 = createTestMetrics(userId, today, 100.0);
+        DashboardMetricsEntity day1 = createTestMetrics(userId, today.minusDays(2));
+        DashboardMetricsEntity day2 = createTestMetrics(userId, today.minusDays(1));
+        DashboardMetricsEntity day3 = createTestMetrics(userId, today);
 
         // When & Then - @Query is REQUIRED for aggregations
         repository.save(day1)
@@ -121,14 +118,14 @@ class DashboardQueryPerformanceTest {
                 .verifyComplete();
     }
 
-    private reactor.core.publisher.Mono<Void> demonstrateQueryComparison(UUID userId, LocalDate start, LocalDate end) {
+    private reactor.core.publisher.Mono<Void> demonstrateQueryComparison(UUID userId) {
         return service.performanceComparisonExample(userId)
-                .doOnSuccess(v -> System.out.println("""
+                .doOnSuccess(_ -> System.out.println("""
                         
                         🎯 PERFORMANCE ANALYSIS COMPLETE:
                         =====================================
                         ✅ Declarative methods: Zero overhead, Spring-generated SQL
-                        🔧 @Query methods: Full control, hand-optimized SQL  
+                        🔧 @Query methods: Full control, hand-optimized SQL
                         ⚡ Performance: IDENTICAL in most cases
                         🧠 Choice: Based on complexity and readability needs
                         
@@ -136,21 +133,13 @@ class DashboardQueryPerformanceTest {
                         """));
     }
 
-    private DashboardMetricsEntity createTestMetrics(UUID userId, LocalDate date, Double productivityScore) {
+    private DashboardMetricsEntity createTestMetrics(UUID userId, LocalDate date) {
         return DashboardMetricsEntity.builder()
                 .id(UUID.randomUUID())
                 .userId(userId)
                 .metricDate(date)
                 .totalEvents(1000L)
                 .avgIntensity(50.0)
-                .maxIntensity(100.0)
-                .breakRecommendationsCount(3)
-                .workDurationMinutes(480) // 8 hours
-                .breakDurationMinutes(60)  // 1 hour
-                .productivityScore(productivityScore)
-                .metadata(Map.of("source", "test", "version", "1.0"))
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
                 .build();
     }
 

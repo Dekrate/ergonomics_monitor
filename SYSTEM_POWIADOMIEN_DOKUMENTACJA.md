@@ -265,13 +265,13 @@ ergonomics.notifications.windows.enabled: true
 ```
 Uruchom aplikację i pracuj intensywnie przez 25 minut - pojawi się MessageBox.
 
-2. **Tylko logi (dev mode):**
+1. **Tylko logi (dev mode):**
 ```yaml
 ergonomics.notifications.windows.enabled: false
 ergonomics.notifications.log-only.enabled: true
 ```
 
-3. **Wyłączenie systemu:**
+1. **Wyłączenie systemu:**
 Usuń `@EnableScheduling` z `SchedulingConfig` lub:
 ```yaml
 spring.scheduling.enabled: false

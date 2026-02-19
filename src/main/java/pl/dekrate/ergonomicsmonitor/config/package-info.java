@@ -1,6 +1,6 @@
 /**
  * Spring configuration classes for application setup.
- *
+ * <p>
  * Note: No nullability annotations applied - Spring Data R2DBC converters
  * must handle nullable values as per Converter interface contract.
  *

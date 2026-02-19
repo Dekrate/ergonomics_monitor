@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Main Spring Boot application class for Ergonomics Monitor.
- *
+ * <p>
  * This class serves as the entry point for the Spring Boot application
  * and enables auto-configuration, component scanning, and configuration.
  *

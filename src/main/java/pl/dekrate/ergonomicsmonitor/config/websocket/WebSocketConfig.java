@@ -13,10 +13,10 @@ import java.util.Map;
 
 /**
  * WebSocket configuration for real-time activity updates.
- *
+ * <p>
  * Provides real-time streaming of activity events and break recommendations
  * to connected clients via WebSocket connections.
- *
+ * <p>
  * Features:
  * - Real-time activity event streaming
  * - Break recommendation notifications

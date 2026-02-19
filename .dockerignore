@@ -2,7 +2,6 @@ target/
 *.jar
 *.war
 *.ear
-*.class
 .mvn/
 mvnw
 mvnw.cmd

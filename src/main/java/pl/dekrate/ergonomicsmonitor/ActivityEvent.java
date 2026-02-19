@@ -119,7 +119,7 @@ public final class ActivityEvent implements Persistable<UUID> {
         private ActivityType type;
         private double intensity;
         private Map<String, Object> metadata;
-        private boolean isNew = true; // domyślnie nowe encje
+        private final boolean isNew = true; // domyślnie nowe encje
 
         private Builder() {}
 
@@ -150,11 +150,6 @@ public final class ActivityEvent implements Persistable<UUID> {
 
         public Builder metadata(Map<String, Object> metadata) {
             this.metadata = metadata;
-            return this;
-        }
-
-        public Builder markAsExisting() {
-            this.isNew = false;
             return this;
         }
 

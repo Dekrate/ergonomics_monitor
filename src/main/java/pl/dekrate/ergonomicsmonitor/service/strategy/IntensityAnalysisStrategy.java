@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Strategy interface for analyzing activity patterns and determining break recommendations.
  * Implements Strategy Pattern to allow different algorithms for break detection.
- *
+ * <p>
  * Following SOLID principles:
  * - Single Responsibility: Each strategy focuses on one analysis algorithm
  * - Open/Closed: New strategies can be added without modifying existing code

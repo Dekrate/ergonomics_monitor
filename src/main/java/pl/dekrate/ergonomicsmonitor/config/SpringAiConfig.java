@@ -67,8 +67,8 @@ public class SpringAiConfig {
     @Primary
     public OllamaChatModel ollamaChatModel(OllamaApi ollamaApi) {
         return OllamaChatModel.builder()
-                .withOllamaApi(ollamaApi)
-                .withDefaultOptions(OllamaOptions.builder()
+                .ollamaApi(ollamaApi)
+                .defaultOptions(OllamaOptions.builder()
                         .model(modelName)
                         .temperature(0.7)
                         .build())

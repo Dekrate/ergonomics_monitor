@@ -11,7 +11,6 @@ import pl.dekrate.ergonomicsmonitor.model.ActivityIntensityMetrics;
 import pl.dekrate.ergonomicsmonitor.model.BreakRecommendation;
 import pl.dekrate.ergonomicsmonitor.model.BreakUrgency;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -22,14 +21,14 @@ import reactor.core.scheduler.Schedulers;
 
 /**
  * AI-powered break recommendation strategy using Ollama LLM.
- *
+ * <p>
  * Analyzes activity patterns using artificial intelligence to provide
  * intelligent and personalized break recommendations based on:
  * - Activity intensity patterns
  * - Work duration analysis
  * - Ergonomic risk assessment
  * - Personalized recommendations
- *
+ * <p>
  * Implements Strategy pattern for pluggable AI analysis.
  *
  * @author dekrate
@@ -58,7 +57,7 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
         Odpowiedz TYLKO w formacie JSON:
         {{
             "needsBreak": true/false,
-            "urgency": "LOW/MEDIUM/CRITICAL", 
+            "urgency": "LOW/MEDIUM/CRITICAL",
             "durationMinutes": liczba_minut,
             "reason": "krótkie uzasadnienie"
         }}
@@ -150,8 +149,8 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
             try {
                 // Simple JSON parsing - in production use Jackson ObjectMapper
                 String cleaned = aiResponse.trim()
-                        .replaceAll("```json", "")
-                        .replaceAll("```", "")
+                        .replace("```json", "")
+                        .replace("```", "")
                         .trim();
 
                 log.debug("Parsing AI response: {}", cleaned);
@@ -168,7 +167,7 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
                 String reason = extractJsonValue(cleaned, "reason");
 
                 BreakUrgency urgency = parseUrgency(urgencyStr);
-                int duration = Integer.parseInt(durationStr.replaceAll("[^0-9]", ""));
+                int duration = Integer.parseInt(durationStr.replace("[^0-9]", ""));
 
                 return BreakRecommendation.builder()
                         .timestamp(Instant.now())
@@ -194,7 +193,7 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
         java.util.regex.Matcher m = p.matcher(json);
 
         if (m.find()) {
-            return m.group(1).trim().replaceAll("\"", "");
+            return m.group(1).trim().replace("\"", "");
         }
 
         throw new IllegalArgumentException("Key not found: " + key);
@@ -203,7 +202,7 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
     private BreakUrgency parseUrgency(String urgencyStr) {
         try {
             return BreakUrgency.valueOf(urgencyStr.toUpperCase());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             log.warn("Unknown urgency level: {}, defaulting to MEDIUM", urgencyStr);
             return BreakUrgency.MEDIUM;
         }

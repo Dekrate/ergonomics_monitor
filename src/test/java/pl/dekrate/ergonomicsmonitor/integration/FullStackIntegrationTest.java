@@ -56,7 +56,6 @@ class FullStackIntegrationTest {
                     assertThat(metrics.getUserId()).isEqualTo(userId);
                     assertThat(metrics.getMetricDate()).isEqualTo(today);
                     assertThat(metrics.getTotalEvents()).isGreaterThanOrEqualTo(0);
-                    assertThat(metrics.getProductivityScore()).isGreaterThanOrEqualTo(0.0);
                 })
                 .verifyComplete();
     }
@@ -72,8 +71,7 @@ class FullStackIntegrationTest {
                 .assertNext(summary -> {
                     assertThat(summary).containsKeys(
                         "period", "startDate", "endDate", "daysWithData",
-                        "averageProductivityScore", "totalEvents",
-                        "totalWorkHours", "totalBreakHours", "dailyMetrics"
+                        "totalEvents", "dailyMetrics"
                     );
                     assertThat(summary.get("period")).isEqualTo("week");
                 })

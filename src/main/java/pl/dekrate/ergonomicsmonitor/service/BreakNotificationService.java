@@ -19,12 +19,12 @@ import java.util.Optional;
 
 /**
  * Core service orchestrating break notification logic.
- *
+ * <p>
  * Responsibilities (following SRP):
  * - Schedule periodic activity analysis
  * - Coordinate between strategy and notification layers
  * - Maintain state to prevent notification spam
- *
+ * <p>
  * Design principles applied:
  * - Dependency Inversion: Depends on abstractions (IntensityAnalysisStrategy, BreakNotifier)
  * - Single Responsibility: Only orchestrates, delegates actual work
@@ -82,12 +82,12 @@ public class BreakNotificationService {
         fetchRecentEvents()
                 .flatMap(this::analyzeWithAllStrategies)
                 .flatMap(this::sendNotifications)
-                .doOnNext(this::handleSuccessfulNotification)
+                .doOnNext(recommendation -> handleSuccessfulNotification())
                 .doOnError(err -> log.error("Error during break analysis", err))
                 .subscribe();
     }
 
-    private void handleSuccessfulNotification(BreakRecommendation recommendation) {
+    private void handleSuccessfulNotification() {
         updateLastNotificationTime();
     }
 

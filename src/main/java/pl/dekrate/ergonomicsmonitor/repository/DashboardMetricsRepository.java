@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * R2DBC repository for {@link DashboardMetricsEntity} providing reactive database operations.
- *
+ * <p>
  * Demonstrates best practices:
  * - Use declarative methods for simple queries (performance is identical)
  * - Use @Query for aggregations, complex joins, and PostgreSQL-specific features
@@ -47,21 +47,6 @@ public interface DashboardMetricsRepository extends R2dbcRepository<DashboardMet
             UUID userId, LocalDate startDate, LocalDate endDate);
 
     /**
-     * Finds the latest dashboard metrics for a user.
-     * Useful for showing the most recent activity summary.
-     *
-     * @param userId the user identifier
-     * @return mono with the latest dashboard metrics, empty if none found
-     */
-    @Query("""
-        SELECT * FROM dashboard_metrics 
-        WHERE user_id = :userId 
-        ORDER BY metric_date DESC 
-        LIMIT 1
-    """)
-    Mono<DashboardMetricsEntity> findLatestByUserId(UUID userId);
-
-    /**
      * Finds dashboard metrics for the last N days for a user.
      *
      * @param userId the user identifier
@@ -69,8 +54,8 @@ public interface DashboardMetricsRepository extends R2dbcRepository<DashboardMet
      * @return flux of recent dashboard metrics
      */
     @Query("""
-        SELECT * FROM dashboard_metrics 
-        WHERE user_id = :userId 
+        SELECT * FROM dashboard_metrics
+        WHERE user_id = :userId
         AND metric_date >= CURRENT_DATE - INTERVAL ':days days'
         ORDER BY metric_date DESC
     """)
@@ -85,35 +70,12 @@ public interface DashboardMetricsRepository extends R2dbcRepository<DashboardMet
      * @return mono with average productivity score, null if no data
      */
     @Query("""
-        SELECT AVG(productivity_score) FROM dashboard_metrics 
-        WHERE user_id = :userId 
+        SELECT AVG(productivity_score) FROM dashboard_metrics
+        WHERE user_id = :userId
         AND metric_date BETWEEN :startDate AND :endDate
         AND productivity_score IS NOT NULL
     """)
     Mono<Double> calculateAverageProductivityScore(UUID userId, LocalDate startDate, LocalDate endDate);
-
-    /**
-     * Finds dates that need metric updates (no metrics exist for those dates).
-     * Used by scheduled jobs to identify missing aggregations.
-     *
-     * @param userId the user identifier
-     * @param startDate start date to check
-     * @param endDate end date to check
-     * @return flux of dates missing metrics
-     */
-    @Query("""
-        SELECT DISTINCT DATE(ae.timestamp) as missing_date
-        FROM activity_events ae
-        WHERE ae.user_id = :userId
-        AND DATE(ae.timestamp) BETWEEN :startDate AND :endDate
-        AND NOT EXISTS (
-            SELECT 1 FROM dashboard_metrics dm 
-            WHERE dm.user_id = ae.user_id 
-            AND dm.metric_date = DATE(ae.timestamp)
-        )
-        ORDER BY missing_date
-    """)
-    Flux<LocalDate> findMissingMetricDates(UUID userId, LocalDate startDate, LocalDate endDate);
 
     /**
      * Updates or inserts dashboard metrics using upsert operation.
@@ -133,7 +95,7 @@ public interface DashboardMetricsRepository extends R2dbcRepository<DashboardMet
             :#{#entity.workDurationMinutes}, :#{#entity.breakDurationMinutes}, :#{#entity.productivityScore},
             :#{#entity.metadata}, :#{#entity.createdAt}, :#{#entity.updatedAt}
         )
-        ON CONFLICT (user_id, metric_date) 
+        ON CONFLICT (user_id, metric_date)
         DO UPDATE SET
             total_events = EXCLUDED.total_events,
             avg_intensity = EXCLUDED.avg_intensity,
@@ -148,16 +110,4 @@ public interface DashboardMetricsRepository extends R2dbcRepository<DashboardMet
     """)
     Mono<DashboardMetricsEntity> upsert(DashboardMetricsEntity entity);
 
-    /**
-     * Deletes dashboard metrics older than specified number of days.
-     * Used for cleanup and data retention management.
-     *
-     * @param retentionDays number of days to retain
-     * @return mono with number of deleted rows
-     */
-    @Query("""
-        DELETE FROM dashboard_metrics 
-        WHERE metric_date < CURRENT_DATE - INTERVAL ':retentionDays days'
-    """)
-    Mono<Integer> deleteOlderThan(int retentionDays);
 }

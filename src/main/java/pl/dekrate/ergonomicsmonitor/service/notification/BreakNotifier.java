@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 /**
  * Port interface for sending break notifications to users.
  * Implements Hexagonal Architecture (Ports & Adapters pattern).
- *
+ * <p>
  * This abstraction allows:
  * - Multiple notification implementations (Windows, Email, SMS, etc.)
  * - Easy testing with mock implementations

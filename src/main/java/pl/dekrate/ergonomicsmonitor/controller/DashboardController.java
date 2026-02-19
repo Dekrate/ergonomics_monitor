@@ -17,13 +17,13 @@ import java.util.UUID;
 
 /**
  * REST API controller for dashboard functionality.
- *
+ * <p>
  * Provides comprehensive dashboard endpoints for:
  * - Real-time metrics streaming
  * - Historical data aggregation
  * - User activity analytics
  * - System health monitoring
- *
+ * <p>
  * Supports both traditional REST responses and Server-Sent Events (SSE)
  * for real-time dashboard updates.
  *

@@ -44,19 +44,6 @@ public final class DashboardQueryComparisonService {
     }
 
     /**
-     * 🟡 COULD BE declarative, but @Query gives database-specific control.
-     * This shows when you might CHOOSE @Query for PostgreSQL optimizations.
-     */
-    public Flux<DashboardMetricsEntity> getRecentMetrics(UUID userId, int days) {
-        log.debug("Using @Query for PostgreSQL INTERVAL function: user={}, days={}", userId, days);
-
-        // 🔧 @Query dla database-specific funkcji (CURRENT_DATE - INTERVAL)
-        return repository.findRecentByUserId(userId, days)
-                .doOnNext(metrics -> log.debug("Recent metrics: {}", metrics.getMetricDate()))
-                .doOnComplete(() -> log.debug("Completed recent metrics query"));
-    }
-
-    /**
      * 🔴 MUST BE @Query - aggregation functions impossible with declarative methods.
      */
     public Mono<Double> calculateAverageProductivity(UUID userId, LocalDate start, LocalDate end) {
@@ -103,39 +90,36 @@ public final class DashboardQueryComparisonService {
      * 🎯 BEST PRACTICES SUMMARY in action.
      */
     public Mono<String> demonstrateBestPractices(UUID userId) {
-        return Mono.fromCallable(() -> {
-            StringBuilder practices = new StringBuilder();
-            practices.append("🎯 SPRING DATA R2DBC BEST PRACTICES:\n\n");
-
-            practices.append("✅ USE DECLARATIVE for:\n");
-            practices.append("  • Simple CRUD operations\n");
-            practices.append("  • findByField, findByFieldAndOtherField\n");
-            practices.append("  • Basic sorting: OrderByFieldDesc\n");
-            practices.append("  • Date ranges: findByDateBetween\n");
-            practices.append("  • Performance = identical to @Query!\n\n");
-
-            practices.append("🔧 USE @QUERY for:\n");
-            practices.append("  • Aggregations: COUNT, AVG, SUM, MAX\n");
-            practices.append("  • Subqueries with EXISTS, NOT EXISTS\n");
-            practices.append("  • Database-specific functions (PostgreSQL INTERVAL)\n");
-            practices.append("  • Complex JOINs across multiple tables\n");
-            practices.append("  • UPSERT operations (ON CONFLICT)\n");
-            practices.append("  • Bulk operations (UPDATE, DELETE)\n\n");
-
-            practices.append("⚡ PERFORMANCE NOTES:\n");
-            practices.append("  • Declarative methods = zero overhead\n");
-            practices.append("  • Spring generates optimal SQL automatically\n");
-            practices.append("  • @Query gives control for complex scenarios\n");
-            practices.append("  • Choose based on readability and requirements\n\n");
-
-            practices.append("🧠 DECISION MATRIX:\n");
-            practices.append("  • Can Spring generate it? → Use declarative\n");
-            practices.append("  • Need aggregation/subquery? → Use @Query\n");
-            practices.append("  • Need database-specific features? → Use @Query\n");
-            practices.append("  • Performance-critical with specific SQL? → Use @Query\n");
-
-            return practices.toString();
-        })
+        return Mono.fromCallable(() -> """
+		        🎯 SPRING DATA R2DBC BEST PRACTICES:
+		        
+		        ✅ USE DECLARATIVE for:
+		          • Simple CRUD operations
+		          • findByField, findByFieldAndOtherField
+		          • Basic sorting: OrderByFieldDesc
+		          • Date ranges: findByDateBetween
+		          • Performance = identical to @Query!
+		        
+		        🔧 USE @QUERY for:
+		          • Aggregations: COUNT, AVG, SUM, MAX
+		          • Subqueries with EXISTS, NOT EXISTS
+		          • Database-specific functions (PostgreSQL INTERVAL)
+		          • Complex JOINs across multiple tables
+		          • UPSERT operations (ON CONFLICT)
+		          • Bulk operations (UPDATE, DELETE)
+		        
+		        ⚡ PERFORMANCE NOTES:
+		          • Declarative methods = zero overhead
+		          • Spring generates optimal SQL automatically
+		          • @Query gives control for complex scenarios
+		          • Choose based on readability and requirements
+		        
+		        🧠 DECISION MATRIX:
+		          • Can Spring generate it? → Use declarative
+		          • Need aggregation/subquery? → Use @Query
+		          • Need database-specific features? → Use @Query
+		          • Performance-critical with specific SQL? → Use @Query
+		        """)
         .doOnSuccess(summary -> log.info("Generated best practices summary for user: {}", userId));
     }
 }

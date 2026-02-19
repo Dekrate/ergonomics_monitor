@@ -1,6 +1,7 @@
 package pl.dekrate.ergonomicsmonitor.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.postgresql.codec.Json;
 import org.springframework.context.annotation.Bean;
@@ -57,6 +58,8 @@ public class DatabaseConfig {
 
     @ReadingConverter
     public static class JsonToMapConverter implements Converter<Json, Map<String, Object>> {
+        private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {
+        };
         private final ObjectMapper objectMapper;
 
         public JsonToMapConverter(final ObjectMapper objectMapper) {
@@ -69,7 +72,7 @@ public class DatabaseConfig {
                 return null;
             }
             try {
-                return objectMapper.readValue(source.asString(), Map.class);
+                return objectMapper.readValue(source.asString(), MAP_TYPE);
             } catch (JsonProcessingException e) {
                 throw new JsonConversionException("Error converting JSON to Map", e);
             }

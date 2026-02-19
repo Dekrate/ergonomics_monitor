@@ -18,7 +18,7 @@ import java.util.Optional;
 /**
  * Concrete strategy implementing Pomodoro-inspired break detection.
  * Recommends breaks after sustained periods of intensive work.
- *
+ * <p>
  * Algorithm:
  * - Analyzes events from last 25 minutes (standard Pomodoro duration)
  * - If average intensity >100 events/min → recommend 5-minute break
