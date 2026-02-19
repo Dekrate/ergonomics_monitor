@@ -20,6 +20,11 @@
         <java.version>23</java.version>
         <spring-ai.version>1.0.0-M5</spring-ai.version>
         <jna.version>5.16.0</jna.version>
+        <!-- SonarQube Configuration -->
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.projectKey>ergonomics-monitor</sonar.projectKey>
+        <sonar.projectName>Ergonomics Monitor</sonar.projectName>
+        <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
     </properties>
 
     <dependencies>
