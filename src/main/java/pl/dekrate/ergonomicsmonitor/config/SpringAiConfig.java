@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.client.ReactorClientHttpConnector;
+import org.springframework.http.client.ReactorClientHttpRequestFactory;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
@@ -46,7 +47,7 @@ public class SpringAiConfig {
     public RestClient.Builder ollamaRestClientBuilder() {
         log.info("Inicjalizacja RestClient.Builder z timeoutem 5 minut dla modelu: {}", modelName);
         return RestClient.builder()
-                .requestFactory(new org.springframework.http.client.ReactorClientHttpRequestFactory(getHttpClient()));
+                .requestFactory(new ReactorClientHttpRequestFactory(getHttpClient()));
     }
 
     @Bean

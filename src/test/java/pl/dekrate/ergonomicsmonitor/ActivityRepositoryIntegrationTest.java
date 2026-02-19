@@ -1,5 +1,6 @@
 package pl.dekrate.ergonomicsmonitor;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 @SpringBootTest
 @Testcontainers
+@Disabled("Disabled due to known npipe:// character issue in Testcontainers on Windows")
 class ActivityRepositoryIntegrationTest {
 
     @Container

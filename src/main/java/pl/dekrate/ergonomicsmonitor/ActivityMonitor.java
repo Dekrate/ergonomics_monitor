@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 /**
  * Low-level system monitor that uses JNA (Java Native Access) to hook into Windows input events.
  * It captures keyboard and mouse activity without blocking the main application flow.
- * 
+ * <p>
  * Captured events are streamed into a reactive sink for asynchronous processing and aggregation.
  */
 @Service
