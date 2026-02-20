@@ -131,14 +131,20 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
 
     private Mono<String> queryAI(Map<String, Object> analysisData) {
         return Mono.fromCallable(() -> {
-            log.debug("Querying AI with data: {}", analysisData);
+            long startTime = System.currentTimeMillis();
+            log.info(">>> [AI START] Sending data to Ollama (Bielik). This might take several minutes...");
+            log.debug("Analysis Data: {}", analysisData);
 
             PromptTemplate promptTemplate = new PromptTemplate(ANALYSIS_PROMPT);
             Prompt prompt = promptTemplate.create(analysisData);
 
-            return chatClient.prompt(prompt)
+            String content = chatClient.prompt(prompt)
                     .call()
                     .content();
+            
+            long duration = (System.currentTimeMillis() - startTime) / 1000;
+            log.info("<<< [AI FINISH] Received response from Ollama in {} seconds", duration);
+            return content;
         })
         .subscribeOn(Schedulers.boundedElastic())
         .doOnNext(response -> log.debug("AI response: {}", response));

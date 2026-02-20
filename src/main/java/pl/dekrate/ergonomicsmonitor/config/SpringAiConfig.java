@@ -10,17 +10,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.client.ReactorClientHttpRequestFactory;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 
 /**
- * Konfiguracja Spring AI udostępniająca ziarno ChatClient.
- * Wymusza długi czas oczekiwania (5 min) dla lokalnych modeli LLM.
+ * Spring AI configuration for Ollama.
+ * Uses a robust blocking client factory to ensure 15-minute timeouts are respected
+ * during long-running local LLM analysis.
  */
 @Configuration
 public class SpringAiConfig {
@@ -33,28 +32,20 @@ public class SpringAiConfig {
     @Value("${spring.ai.ollama.chat.model:SpeakLeash/bielik-11b-v3.0-instruct:bf16}")
     private String modelName;
 
-    /**
-     * Konfiguruje współdzielony HttpClient z ekstremalnie długim timeoutem.
-     */
-    private HttpClient getHttpClient() {
-        return HttpClient.create()
-                .responseTimeout(Duration.ofMinutes(5))
-                .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, 60000);
-    }
-
     @Bean
     @Primary
     public RestClient.Builder ollamaRestClientBuilder() {
-        log.info("Inicjalizacja RestClient.Builder z timeoutem 5 minut dla modelu: {}", modelName);
-        return RestClient.builder()
-                .requestFactory(new ReactorClientHttpRequestFactory(getHttpClient()));
+        log.info("Configuring Bulletproof RestClient for model: {} (15m timeout)", modelName);
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setReadTimeout((int) Duration.ofMinutes(15).toMillis());
+        factory.setConnectTimeout(60000);
+        return RestClient.builder().requestFactory(factory);
     }
 
     @Bean
     @Primary
     public WebClient.Builder ollamaWebClientBuilder() {
-        return WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(getHttpClient()));
+        return WebClient.builder();
     }
 
     @Bean
@@ -78,7 +69,6 @@ public class SpringAiConfig {
     @Bean
     @Primary
     public ChatClient chatClient(OllamaChatModel chatModel) {
-        log.info("Utworzono ChatClient z modelem: {}", modelName);
         return ChatClient.builder(chatModel).build();
     }
 }
