@@ -87,7 +87,7 @@ public class AiAssistantService {
 
     private Mono<String> queryAssistant(
             List<ActivityEvent> events, String question, AiLanguage language) {
-        String context = buildContext(events);
+        String context = buildContext(events, language);
         String prompt = buildPrompt(context, question, language);
         return Mono.fromCallable(() -> chatClient.prompt(prompt).call().content())
                 .subscribeOn(Schedulers.boundedElastic());
@@ -100,9 +100,12 @@ public class AiAssistantService {
         };
     }
 
-    private String buildContext(List<ActivityEvent> events) {
+    private String buildContext(List<ActivityEvent> events, AiLanguage language) {
         if (events.isEmpty()) {
-            return "Brak danych aktywności dla tego użytkownika.";
+            return switch (language) {
+                case PL -> "Brak danych aktywności dla tego użytkownika.";
+                case EN -> "No activity data available for this user.";
+            };
         }
 
         return events.stream()
