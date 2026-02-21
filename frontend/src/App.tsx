@@ -12,7 +12,7 @@ import type { AiLanguage } from './types'
 const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000001'
 
 const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function App() {
   const [userIdInput, setUserIdInput] = useState(DEFAULT_USER_ID)
@@ -90,7 +90,7 @@ function App() {
     if (UUID_PATTERN.test(userIdInput)) {
       return null
     }
-    return 'Enter a valid UUID v4 user id.'
+    return 'Enter a valid UUID user id.'
   }, [userIdInput])
 
   const latestLive = state.liveEvents[0]
