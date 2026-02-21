@@ -13,6 +13,6 @@ public enum ActivityType {
     /** Mouse movement or click activity. */
     MOUSE,
 
-	/** System-generated aggregated event. */
+    /** System-generated aggregated event. */
     SYSTEM_EVENT
 }

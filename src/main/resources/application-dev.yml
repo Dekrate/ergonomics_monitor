@@ -32,7 +32,7 @@ server:
 
 ergonomics:
   break-check:
-    cron: "0 * * * * *"  # Co minutę
+    cron: "0 */15 * * * *"  # Co 15 minut
   notifications:
     windows:
       enabled: true
@@ -41,5 +41,9 @@ ergonomics:
 
 logging:
   level:
-    pl.dekrate.ergonomicsmonitor: INFO
+    pl.dekrate.ergonomicsmonitor: DEBUG
     org.springframework.r2dbc: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.web.client: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG

@@ -1,17 +1,16 @@
 package pl.dekrate.ergonomicsmonitor.migration;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 /**
- * Unit test for Flyway migration files validation.
- * Tests migration SQL syntax and structure without requiring Docker or Spring context.
+ * Unit test for Flyway migration files validation. Tests migration SQL syntax and structure without
+ * requiring Docker or Spring context.
  *
  * @author dekrate
  * @version 1.0
@@ -63,9 +62,7 @@ class FlywayMigrationValidationTest {
 
         // V1__initial_schema.sql should follow Flyway naming convention
         Path v1Migration = migrationDir.resolve("V1__initial_schema.sql");
-        assertThat(v1Migration)
-                .exists()
-                .hasFileName("V1__initial_schema.sql");
+        assertThat(v1Migration).exists().hasFileName("V1__initial_schema.sql");
     }
 
     @Test
@@ -84,13 +81,10 @@ class FlywayMigrationValidationTest {
                 .doesNotContain("FIXME");
 
         // Validate proper semicolon usage
-        long createTableCount = content.lines()
-                .filter(line -> line.trim().startsWith("CREATE TABLE"))
-                .count();
+        long createTableCount =
+                content.lines().filter(line -> line.trim().startsWith("CREATE TABLE")).count();
 
-        long semicolonCount = content.lines()
-                .filter(line -> line.trim().endsWith(";"))
-                .count();
+        long semicolonCount = content.lines().filter(line -> line.trim().endsWith(";")).count();
 
         // Should have proper SQL statement termination
         assertThat(semicolonCount).isGreaterThan(0);
@@ -103,11 +97,7 @@ class FlywayMigrationValidationTest {
         String content = Files.readString(migrationFile);
 
         // When & Then - validate all required tables exist
-        String[] requiredTables = {
-                "activity_events",
-                "break_recommendations",
-                "dashboard_metrics"
-        };
+        String[] requiredTables = {"activity_events", "break_recommendations", "dashboard_metrics"};
 
         for (String table : requiredTables) {
             assertThat(content)

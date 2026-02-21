@@ -1,17 +1,16 @@
 package pl.dekrate.ergonomicsmonitor;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import pl.dekrate.ergonomicsmonitor.model.ActivityType;
 import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-
 /**
- * Unit test for ActivityMonitor logic.
- * Focuses on event aggregation without starting native hooks or database.
+ * Unit test for ActivityMonitor logic. Focuses on event aggregation without starting native hooks
+ * or database.
  */
 class ActivityMonitorTest {
 
@@ -21,12 +20,12 @@ class ActivityMonitorTest {
     @Test
     void shouldCorrectlyAggregateEvents() {
         // Given
-        List<ActivityType> types = List.of(
-                ActivityType.KEYBOARD, 
-                ActivityType.KEYBOARD, 
-                ActivityType.MOUSE, 
-                ActivityType.KEYBOARD
-        );
+        List<ActivityType> types =
+                List.of(
+                        ActivityType.KEYBOARD,
+                        ActivityType.KEYBOARD,
+                        ActivityType.MOUSE,
+                        ActivityType.KEYBOARD);
 
         // When
         ActivityEvent result = monitor.createAggregatedEvent(types);

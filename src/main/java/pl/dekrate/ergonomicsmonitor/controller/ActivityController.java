@@ -18,13 +18,13 @@ public class ActivityController {
     }
 
     /**
-     * Pobiera strumień ostatnich 10 zdarzeń.
-     * Dzięki WebFlux połączenie pozostaje otwarte tylko tyle, ile trzeba,
-     * nie blokując wątków serwera.
+     * Pobiera strumień ostatnich 10 zdarzeń. Dzięki WebFlux połączenie pozostaje otwarte tylko
+     * tyle, ile trzeba, nie blokując wątków serwera.
      */
     @GetMapping("/recent")
     public Flux<ActivityEvent> getRecentActivity() {
-        return repository.findAll()
+        return repository
+                .findAll()
                 .take(10); // W realnym systemie użylibyśmy sortowania po timestamp i limitu w SQL
     }
 }

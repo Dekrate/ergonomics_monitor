@@ -1,5 +1,8 @@
 package pl.dekrate.ergonomicsmonitor.controller;
 
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,21 +14,14 @@ import pl.dekrate.ergonomicsmonitor.service.DashboardService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.UUID;
-
 /**
  * REST API controller for dashboard functionality.
- * <p>
- * Provides comprehensive dashboard endpoints for:
- * - Real-time metrics streaming
- * - Historical data aggregation
- * - User activity analytics
- * - System health monitoring
- * <p>
- * Supports both traditional REST responses and Server-Sent Events (SSE)
- * for real-time dashboard updates.
+ *
+ * <p>Provides comprehensive dashboard endpoints for: - Real-time metrics streaming - Historical
+ * data aggregation - User activity analytics - System health monitoring
+ *
+ * <p>Supports both traditional REST responses and Server-Sent Events (SSE) for real-time dashboard
+ * updates.
  *
  * @author dekrate
  * @version 1.0
@@ -41,8 +37,8 @@ public final class DashboardController {
     private final DashboardService dashboardService;
     private final ActivityWebSocketHandler webSocketHandler;
 
-    public DashboardController(DashboardService dashboardService,
-                              ActivityWebSocketHandler webSocketHandler) {
+    public DashboardController(
+            DashboardService dashboardService, ActivityWebSocketHandler webSocketHandler) {
         this.dashboardService = dashboardService;
         this.webSocketHandler = webSocketHandler;
     }
@@ -57,12 +53,14 @@ public final class DashboardController {
     @GetMapping("/metrics/{userId}")
     public Mono<DashboardMetricsEntity> getDailyMetrics(
             @PathVariable UUID userId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                    LocalDate date) {
 
         LocalDate targetDate = date != null ? date : LocalDate.now();
         log.debug("Getting daily metrics for user {} on date {}", userId, targetDate);
 
-        return dashboardService.getOrCreateDailyMetrics(userId, targetDate)
+        return dashboardService
+                .getOrCreateDailyMetrics(userId, targetDate)
                 .doOnNext(metrics -> log.debug("Retrieved metrics: {}", metrics.getId()));
     }
 
@@ -82,8 +80,11 @@ public final class DashboardController {
 
         log.debug("Getting metrics range for user {} from {} to {}", userId, startDate, endDate);
 
-        return dashboardService.getMetricsInDateRange(userId, startDate, endDate)
-                .doOnNext(metrics -> log.debug("Retrieved range metric: {}", metrics.getMetricDate()));
+        return dashboardService
+                .getMetricsInDateRange(userId, startDate, endDate)
+                .doOnNext(
+                        metrics ->
+                                log.debug("Retrieved range metric: {}", metrics.getMetricDate()));
     }
 
     /**
@@ -96,9 +97,13 @@ public final class DashboardController {
     public Mono<Map<String, Object>> getWeeklySummary(@PathVariable UUID userId) {
         log.debug("Getting weekly summary for user {}", userId);
 
-        return dashboardService.generateWeeklySummary(userId)
-                .doOnNext(summary -> log.debug("Generated weekly summary with {} metrics",
-                    ((Map<?, ?>) summary.get("dailyMetrics")).size()));
+        return dashboardService
+                .generateWeeklySummary(userId)
+                .doOnNext(
+                        summary ->
+                                log.debug(
+                                        "Generated weekly summary with {} metrics",
+                                        ((Map<?, ?>) summary.get("dailyMetrics")).size()));
     }
 
     /**
@@ -111,7 +116,8 @@ public final class DashboardController {
     public Mono<Map<String, Object>> getMonthlySummary(@PathVariable UUID userId) {
         log.debug("Getting monthly summary for user {}", userId);
 
-        return dashboardService.generateMonthlySummary(userId)
+        return dashboardService
+                .generateMonthlySummary(userId)
                 .doOnNext(summary -> log.debug("Generated monthly summary"));
     }
 
@@ -125,7 +131,8 @@ public final class DashboardController {
     public Flux<Map<String, Object>> streamDashboardUpdates(@PathVariable UUID userId) {
         log.info("Starting dashboard stream for user {}", userId);
 
-        return dashboardService.createRealTimeStream(userId)
+        return dashboardService
+                .createRealTimeStream(userId)
                 .doOnNext(update -> log.debug("Streaming dashboard update: {}", update.get("type")))
                 .doOnCancel(() -> log.info("Dashboard stream cancelled for user {}", userId))
                 .doOnError(error -> log.error("Dashboard stream error for user {}", userId, error));
@@ -141,8 +148,12 @@ public final class DashboardController {
     public Mono<Map<String, Object>> recalculateMetrics(@PathVariable UUID userId) {
         log.info("Manual metrics recalculation triggered for user {}", userId);
 
-        return dashboardService.recalculateMetricsForUser(userId)
-                .doOnNext(result -> log.info("Recalculation completed for user {}: {}", userId, result));
+        return dashboardService
+                .recalculateMetricsForUser(userId)
+                .doOnNext(
+                        result ->
+                                log.info(
+                                        "Recalculation completed for user {}: {}", userId, result));
     }
 
     /**
@@ -154,17 +165,19 @@ public final class DashboardController {
     public Mono<Map<String, Object>> getSystemHealth() {
         log.debug("Getting system health information");
 
-        return Mono.fromCallable(() -> Map.of(
-            "activeWebSocketConnections", webSocketHandler.getActiveConnectionsCount(),
-            "systemTime", System.currentTimeMillis(),
-            "status", "healthy",
-            "features", Map.of(
-                "realTimeStreaming", true,
-                "aiRecommendations", true,
-                "dashboardMetrics", true,
-                "webSocketSupport", true
-            )
-        ));
+        return Mono.fromCallable(
+                () ->
+                        Map.of(
+                                "activeWebSocketConnections",
+                                        webSocketHandler.getActiveConnectionsCount(),
+                                "systemTime", System.currentTimeMillis(),
+                                "status", "healthy",
+                                "features",
+                                        Map.of(
+                                                "realTimeStreaming", true,
+                                                "aiRecommendations", true,
+                                                "dashboardMetrics", true,
+                                                "webSocketSupport", true)));
     }
 
     /**
@@ -174,36 +187,34 @@ public final class DashboardController {
      */
     @GetMapping("/config")
     public Mono<Map<String, Object>> getDashboardConfig() {
-        return Mono.just(Map.of(
-            "features", Map.of(
-                "realTimeUpdates", true,
-                "historicalData", true,
-                "aiAnalysis", true,
-                "exportData", true
-            ),
-            "limits", Map.of(
-                "maxDateRange", 365,
-                "maxEventsPerQuery", 1000
-            ),
-            "endpoints", Map.of(
-                "websocket", "/ws/activity",
-                "stream", "/api/dashboard/stream/{userId}",
-                "metrics", "/api/dashboard/metrics/{userId}"
-            )
-        ));
+        return Mono.just(
+                Map.of(
+                        "features",
+                                Map.of(
+                                        "realTimeUpdates", true,
+                                        "historicalData", true,
+                                        "aiAnalysis", true,
+                                        "exportData", true),
+                        "limits",
+                                Map.of(
+                                        "maxDateRange", 365,
+                                        "maxEventsPerQuery", 1000),
+                        "endpoints",
+                                Map.of(
+                                        "websocket", "/ws/activity",
+                                        "stream", "/api/dashboard/stream/{userId}",
+                                        "metrics", "/api/dashboard/metrics/{userId}")));
     }
 
-    /**
-     * Exception handler for dashboard-specific errors.
-     */
+    /** Exception handler for dashboard-specific errors. */
     @ExceptionHandler(IllegalArgumentException.class)
     public Mono<Map<String, Object>> handleIllegalArgument(IllegalArgumentException e) {
         log.warn("Dashboard request validation error: {}", e.getMessage());
 
-        return Mono.just(Map.of(
-            "error", "VALIDATION_ERROR",
-            "message", e.getMessage(),
-            "timestamp", System.currentTimeMillis()
-        ));
+        return Mono.just(
+                Map.of(
+                        "error", "VALIDATION_ERROR",
+                        "message", e.getMessage(),
+                        "timestamp", System.currentTimeMillis()));
     }
 }

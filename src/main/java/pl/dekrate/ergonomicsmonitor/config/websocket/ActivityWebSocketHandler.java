@@ -3,6 +3,11 @@ package pl.dekrate.ergonomicsmonitor.config.websocket;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -14,23 +19,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * WebSocket handler for real-time activity updates.
- * <p>
- * Manages WebSocket connections and streams activity data to connected clients.
- * Supports:
- * - Live activity event streaming
- * - Break recommendation notifications
- * - Connection management and cleanup
+ *
+ * <p>Manages WebSocket connections and streams activity data to connected clients. Supports: - Live
+ * activity event streaming - Break recommendation notifications - Connection management and cleanup
  * - JSON message serialization
- * <p>
- * Uses reactive streams for efficient real-time data delivery.
+ *
+ * <p>Uses reactive streams for efficient real-time data delivery.
  *
  * @author dekrate
  * @version 1.0
@@ -62,39 +58,44 @@ public final class ActivityWebSocketHandler implements WebSocketHandler {
         activeSessions.put(sessionId, session);
 
         // Stream activity updates to client
-        Mono<Void> outputMono = session.send(
-            Flux.merge(
-                // Welcome message first
-                Flux.just(createWelcomeMessage()).take(1),
-                // Then real-time updates
-                activitySink.asFlux(),
-                // Heartbeat to keep connection alive
-                createHeartbeatStream()
-            )
-            .map(this::serializeMessage)
-            .map(session::textMessage)
-            .doOnError(error -> log.error("Error sending WebSocket message", error))
-            .onErrorContinue((error, _) -> log.warn("Continuing after WebSocket error: {}", error.getMessage()))
-        );
+        Mono<Void> outputMono =
+                session.send(
+                        Flux.merge(
+                                        // Welcome message first
+                                        Flux.just(createWelcomeMessage()).take(1),
+                                        // Then real-time updates
+                                        activitySink.asFlux(),
+                                        // Heartbeat to keep connection alive
+                                        createHeartbeatStream())
+                                .map(this::serializeMessage)
+                                .map(session::textMessage)
+                                .doOnError(
+                                        error ->
+                                                log.error("Error sending WebSocket message", error))
+                                .onErrorContinue(
+                                        (error, _) ->
+                                                log.warn(
+                                                        "Continuing after WebSocket error: {}",
+                                                        error.getMessage())));
 
         // Handle incoming messages (if any)
-        Mono<Void> inputMono = session.receive()
-                .map(WebSocketMessage::getPayloadAsText)
-                .doOnNext(text -> handleIncomingMessage(sessionId, text))
-                .doOnError(error -> log.error("Error receiving WebSocket message", error))
-                .then();
+        Mono<Void> inputMono =
+                session.receive()
+                        .map(WebSocketMessage::getPayloadAsText)
+                        .doOnNext(text -> handleIncomingMessage(sessionId, text))
+                        .doOnError(error -> log.error("Error receiving WebSocket message", error))
+                        .then();
 
         // Combine input and output, cleanup on completion
         return Mono.when(inputMono, outputMono)
-                .doFinally(signalType -> {
-                    log.info("WebSocket connection closed: {} ({})", sessionId, signalType);
-                    activeSessions.remove(sessionId);
-                });
+                .doFinally(
+                        signalType -> {
+                            log.info("WebSocket connection closed: {} ({})", sessionId, signalType);
+                            activeSessions.remove(sessionId);
+                        });
     }
 
-    /**
-     * Broadcast activity update to all connected clients.
-     */
+    /** Broadcast activity update to all connected clients. */
     public void broadcastActivityUpdate(ActivityUpdate update) {
         log.debug("Broadcasting activity update: {}", update);
 
@@ -104,34 +105,35 @@ public final class ActivityWebSocketHandler implements WebSocketHandler {
         }
     }
 
-    /**
-     * Get count of active WebSocket connections.
-     */
+    /** Get count of active WebSocket connections. */
     public int getActiveConnectionsCount() {
         return activeSessions.size();
     }
 
     private ActivityUpdate createWelcomeMessage() {
         return new ActivityUpdate(
-            "WELCOME",
-            "Connected to Ergonomics Monitor real-time stream",
-            Instant.now(),
-            Map.of(
-                "connectionId", UUID.randomUUID().toString(),
-                "serverTime", Instant.now().toString(),
-                "features", "activity-events,break-recommendations,heartbeat"
-            )
-        );
+                "WELCOME",
+                "Connected to Ergonomics Monitor real-time stream",
+                Instant.now(),
+                Map.of(
+                        "connectionId", UUID.randomUUID().toString(),
+                        "serverTime", Instant.now().toString(),
+                        "features", "activity-events,break-recommendations,heartbeat"));
     }
 
     private Flux<ActivityUpdate> createHeartbeatStream() {
         return Flux.interval(Duration.ofSeconds(30))
-                .map(tick -> new ActivityUpdate(
-                    "HEARTBEAT",
-                    "Server heartbeat",
-                    Instant.now(),
-                    Map.of("tick", tick, "activeConnections", getActiveConnectionsCount())
-                ));
+                .map(
+                        tick ->
+                                new ActivityUpdate(
+                                        "HEARTBEAT",
+                                        "Server heartbeat",
+                                        Instant.now(),
+                                        Map.of(
+                                                "tick",
+                                                tick,
+                                                "activeConnections",
+                                                getActiveConnectionsCount())));
     }
 
     private void handleIncomingMessage(String sessionId, String message) {
@@ -155,12 +157,9 @@ public final class ActivityWebSocketHandler implements WebSocketHandler {
 
     private void handlePing(String sessionId) {
         // Respond to ping with pong
-        ActivityUpdate pong = new ActivityUpdate(
-            "PONG",
-            "Pong response",
-            Instant.now(),
-            Map.of("sessionId", sessionId)
-        );
+        ActivityUpdate pong =
+                new ActivityUpdate(
+                        "PONG", "Pong response", Instant.now(), Map.of("sessionId", sessionId));
         activitySink.tryEmitNext(pong);
     }
 
@@ -185,13 +184,7 @@ public final class ActivityWebSocketHandler implements WebSocketHandler {
         }
     }
 
-    /**
-     * Data class for activity updates sent over WebSocket.
-     */
+    /** Data class for activity updates sent over WebSocket. */
     public record ActivityUpdate(
-        String type,
-        String message,
-        Instant timestamp,
-        Map<String, Object> data
-    ) {}
+            String type, String message, Instant timestamp, Map<String, Object> data) {}
 }
