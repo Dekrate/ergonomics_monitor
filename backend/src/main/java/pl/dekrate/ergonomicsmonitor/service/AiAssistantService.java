@@ -3,6 +3,7 @@ package pl.dekrate.ergonomicsmonitor.service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.ai.chat.client.ChatClient;
@@ -53,9 +54,12 @@ public class AiAssistantService {
             ActivityRepository activityRepository,
             ChatClient chatClient,
             AiLanguagePreferenceService languagePreferenceService) {
-        this.activityRepository = activityRepository;
-        this.chatClient = chatClient;
-        this.languagePreferenceService = languagePreferenceService;
+        this.activityRepository =
+                Objects.requireNonNull(activityRepository, "activityRepository cannot be null");
+        this.chatClient = Objects.requireNonNull(chatClient, "chatClient cannot be null");
+        this.languagePreferenceService =
+                Objects.requireNonNull(
+                        languagePreferenceService, "languagePreferenceService cannot be null");
     }
 
     /**

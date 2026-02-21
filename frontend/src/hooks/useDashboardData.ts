@@ -15,6 +15,8 @@ interface DashboardDataOptions {
   minRenderGapMs: number
 }
 
+const MAX_CONSECUTIVE_SSE_ERRORS = 6
+
 export function useDashboardData(userId: string, options: DashboardDataOptions) {
   const [state, setState] = useState<DashboardState>({
     summary: null,
@@ -24,6 +26,7 @@ export function useDashboardData(userId: string, options: DashboardDataOptions) 
     error: null,
   })
   const lastAcceptedAtRef = useRef(0)
+  const consecutiveSseErrorsRef = useRef(0)
 
   useEffect(() => {
     let cancelled = false
@@ -63,6 +66,7 @@ export function useDashboardData(userId: string, options: DashboardDataOptions) 
       if (disposed) {
         return
       }
+      consecutiveSseErrorsRef.current = 0
       setState((prev) => ({ ...prev, error: null }))
     }
 
@@ -91,6 +95,16 @@ export function useDashboardData(userId: string, options: DashboardDataOptions) 
       if (disposed) {
         return
       }
+      consecutiveSseErrorsRef.current += 1
+      if (consecutiveSseErrorsRef.current >= MAX_CONSECUTIVE_SSE_ERRORS) {
+        eventSource.close()
+        setState((prev) => ({
+          ...prev,
+          error: 'Realtime stream is unavailable. Check access rights or backend status.',
+        }))
+        return
+      }
+
       setState((prev) => ({ ...prev, error: 'Realtime connection interrupted, retrying...' }))
     }
 
