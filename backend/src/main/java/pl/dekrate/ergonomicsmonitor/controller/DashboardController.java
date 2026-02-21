@@ -1,6 +1,7 @@
 package pl.dekrate.ergonomicsmonitor.controller;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -99,10 +100,14 @@ public final class DashboardController {
         return dashboardService
                 .generateWeeklySummary(userId)
                 .doOnNext(
-                        summary ->
-                                log.debug(
-                                        "Generated weekly summary with {} metrics",
-                                        ((Map<?, ?>) summary.get("dailyMetrics")).size()));
+                        summary -> {
+                            Object dailyMetrics = summary.get("dailyMetrics");
+                            int metricsCount =
+                                    dailyMetrics instanceof Collection<?> collection
+                                            ? collection.size()
+                                            : 0;
+                            log.debug("Generated weekly summary with {} metrics", metricsCount);
+                        });
     }
 
     /**
