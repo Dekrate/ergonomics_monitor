@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
@@ -26,14 +27,14 @@ public final class DashboardMetricsEntity {
     private final Long totalEvents;
     private final Double avgIntensity;
 
-    private DashboardMetricsEntity(Builder builder) {
-        this.id = builder.id;
-        this.userId = Objects.requireNonNull(builder.userId, "userId cannot be null");
-        this.metricDate = Objects.requireNonNull(builder.metricDate, "metricDate cannot be null");
-        this.totalEvents =
-                Objects.requireNonNull(builder.totalEvents, "totalEvents cannot be null");
-        this.avgIntensity =
-                Objects.requireNonNull(builder.avgIntensity, "avgIntensity cannot be null");
+    @PersistenceCreator
+    public DashboardMetricsEntity(
+            UUID id, UUID userId, LocalDate metricDate, Long totalEvents, Double avgIntensity) {
+        this.id = id;
+        this.userId = Objects.requireNonNull(userId, "userId cannot be null");
+        this.metricDate = Objects.requireNonNull(metricDate, "metricDate cannot be null");
+        this.totalEvents = Objects.requireNonNull(totalEvents, "totalEvents cannot be null");
+        this.avgIntensity = Objects.requireNonNull(avgIntensity, "avgIntensity cannot be null");
     }
 
     public static Builder builder() {
@@ -129,7 +130,7 @@ public final class DashboardMetricsEntity {
         }
 
         public DashboardMetricsEntity build() {
-            return new DashboardMetricsEntity(this);
+            return new DashboardMetricsEntity(id, userId, metricDate, totalEvents, avgIntensity);
         }
     }
 }
