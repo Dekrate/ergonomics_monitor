@@ -14,6 +14,14 @@ public interface ActivityRepository extends R2dbcRepository<ActivityEvent, UUID>
     @Query(
             """
         SELECT * FROM activity_events
+        ORDER BY timestamp DESC
+        LIMIT 50
+    """)
+    Flux<ActivityEvent> findLatest50Events();
+
+    @Query(
+            """
+        SELECT * FROM activity_events
         WHERE user_id = :userId
         AND timestamp BETWEEN :startTime AND :endTime
         ORDER BY timestamp ASC

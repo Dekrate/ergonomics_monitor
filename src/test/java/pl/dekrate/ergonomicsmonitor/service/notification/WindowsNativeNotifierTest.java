@@ -14,9 +14,9 @@ import pl.dekrate.ergonomicsmonitor.model.BreakUrgency;
 /**
  * Unit tests for WindowsNativeNotifier.
  *
- * <p>Note: We cannot easily mock JNA User32 calls, so these tests verify the business logic
- * (formatting, mapping) rather than actual MessageBox display. Integration tests would require
- * actual Windows environment.
+ * <p>Note: Actual tray display requires a real desktop session, so these tests verify notifier
+ * contract and object wiring. Integration tests should validate native notification rendering on
+ * Windows.
  *
  * @author dekrate
  * @version 1.0
@@ -38,7 +38,7 @@ class WindowsNativeNotifierTest {
         String type = notifier.getNotifierType();
 
         // then
-        assertEquals("Windows Native MessageBox", type);
+        assertEquals("Windows Tray Notification", type);
     }
 
     @Test
@@ -47,7 +47,7 @@ class WindowsNativeNotifierTest {
         // when & then - verify notifier type is accessible
         String type = notifier.getNotifierType();
         assertNotNull(type);
-        assertEquals("Windows Native MessageBox", type);
+        assertEquals("Windows Tray Notification", type);
     }
 
     @Test

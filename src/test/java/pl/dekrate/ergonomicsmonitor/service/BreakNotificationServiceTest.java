@@ -58,7 +58,7 @@ class BreakNotificationServiceTest {
         List<ActivityEvent> mockEvents = List.of(createMockEvent());
         BreakRecommendation mockRecommendation = createMockRecommendation();
 
-        when(repository.findAll()).thenReturn(Flux.fromIterable(mockEvents));
+        when(repository.findLatest50Events()).thenReturn(Flux.fromIterable(mockEvents));
         when(strategy.analyze(anyList())).thenReturn(Mono.just(mockRecommendation));
         when(notifier.sendNotification(any())).thenReturn(Mono.empty());
 
@@ -69,7 +69,7 @@ class BreakNotificationServiceTest {
         await().atMost(1, TimeUnit.SECONDS)
                 .untilAsserted(
                         () -> {
-                            verify(repository, times(1)).findAll();
+                            verify(repository, times(1)).findLatest50Events();
                             verify(strategy, times(1)).analyze(anyList());
                             verify(notifier, times(1)).sendNotification(mockRecommendation);
                         });
@@ -81,7 +81,7 @@ class BreakNotificationServiceTest {
         // given
         List<ActivityEvent> mockEvents = List.of(createMockEvent());
 
-        when(repository.findAll()).thenReturn(Flux.fromIterable(mockEvents));
+        when(repository.findLatest50Events()).thenReturn(Flux.fromIterable(mockEvents));
         when(strategy.analyze(anyList())).thenReturn(Mono.empty());
 
         // when
@@ -91,7 +91,7 @@ class BreakNotificationServiceTest {
         await().atMost(1, TimeUnit.SECONDS)
                 .untilAsserted(
                         () -> {
-                            verify(repository, times(1)).findAll();
+                            verify(repository, times(1)).findLatest50Events();
                             verify(strategy, times(1)).analyze(anyList());
                             verify(notifier, never()).sendNotification(any());
                         });
@@ -101,7 +101,7 @@ class BreakNotificationServiceTest {
     @DisplayName("should not notify when no events are available")
     void shouldNotNotifyWhenNoEvents() {
         // given
-        when(repository.findAll()).thenReturn(Flux.empty());
+        when(repository.findLatest50Events()).thenReturn(Flux.empty());
 
         // when
         service.checkAndNotifyIfBreakNeeded();
@@ -110,7 +110,7 @@ class BreakNotificationServiceTest {
         await().atMost(1, TimeUnit.SECONDS)
                 .untilAsserted(
                         () -> {
-                            verify(repository, times(1)).findAll();
+                            verify(repository, times(1)).findLatest50Events();
                             verify(strategy, never()).analyze(anyList());
                             verify(notifier, never()).sendNotification(any());
                         });
@@ -123,7 +123,7 @@ class BreakNotificationServiceTest {
         List<ActivityEvent> mockEvents = List.of(createMockEvent());
         BreakRecommendation mockRecommendation = createMockRecommendation();
 
-        when(repository.findAll()).thenReturn(Flux.fromIterable(mockEvents));
+        when(repository.findLatest50Events()).thenReturn(Flux.fromIterable(mockEvents));
         when(strategy.analyze(anyList())).thenReturn(Mono.just(mockRecommendation));
         when(notifier.sendNotification(any())).thenReturn(Mono.empty());
 
@@ -147,7 +147,7 @@ class BreakNotificationServiceTest {
         List<ActivityEvent> mockEvents = List.of(createMockEvent());
         BreakRecommendation mockRecommendation = createMockRecommendation();
 
-        when(repository.findAll()).thenReturn(Flux.fromIterable(mockEvents));
+        when(repository.findLatest50Events()).thenReturn(Flux.fromIterable(mockEvents));
         when(strategy.analyze(anyList())).thenReturn(Mono.just(mockRecommendation));
         when(notifier.sendNotification(any()))
                 .thenReturn(Mono.error(new RuntimeException("Notification failed")));
@@ -175,7 +175,7 @@ class BreakNotificationServiceTest {
         List<ActivityEvent> mockEvents = List.of(createMockEvent());
         BreakRecommendation mockRecommendation = createMockRecommendation();
 
-        when(repository.findAll()).thenReturn(Flux.fromIterable(mockEvents));
+        when(repository.findLatest50Events()).thenReturn(Flux.fromIterable(mockEvents));
         when(strategy1.analyze(anyList())).thenReturn(Mono.just(mockRecommendation));
         when(notifier.sendNotification(any())).thenReturn(Mono.empty());
 
@@ -198,7 +198,7 @@ class BreakNotificationServiceTest {
         List<ActivityEvent> mockEvents = List.of(createMockEvent());
         BreakRecommendation mockRecommendation = createMockRecommendation();
 
-        when(repository.findAll()).thenReturn(Flux.fromIterable(mockEvents));
+        when(repository.findLatest50Events()).thenReturn(Flux.fromIterable(mockEvents));
         when(strategy.analyze(anyList())).thenReturn(Mono.just(mockRecommendation));
         when(notifier.sendNotification(any())).thenReturn(Mono.empty());
 

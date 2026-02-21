@@ -94,8 +94,7 @@ public class BreakNotificationService {
      */
     private Mono<List<ActivityEvent>> fetchRecentEvents() {
         return repository
-                .findAll()
-                .take(50)
+                .findLatest50Events()
                 .collectList()
                 .doOnNext(events -> log.debug("Fetched {} events for analysis", events.size()));
     }
@@ -138,17 +137,26 @@ public class BreakNotificationService {
                                                     log.info(
                                                             "Notification sent successfully via {}",
                                                             notifier.getNotifierType()))
+                                    .thenReturn(true)
                                     .onErrorResume(
                                             err -> {
                                                 log.error(
                                                         "Failed to send notification via {}",
                                                         notifier.getNotifierType(),
                                                         err);
-                                                return Mono
-                                                        .empty(); // Continue with other notifiers
+                                                return Mono.just(
+                                                        false); // Continue with other notifiers
                                             });
                         })
-                .then(Mono.just(recommendation));
+                .reduce(false, (anySuccess, sent) -> anySuccess || sent)
+                .flatMap(
+                        anySuccess -> {
+                            if (anySuccess) {
+                                return Mono.just(recommendation);
+                            }
+                            log.warn("No notifier delivered the notification successfully");
+                            return Mono.empty();
+                        });
     }
 
     private boolean shouldSkipNotification() {
