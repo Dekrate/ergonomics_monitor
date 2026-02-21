@@ -1,106 +1,71 @@
-# Ergonomics Monitor - Setup & Development
+# Ergonomics Monitor
 
-## 🚀 Quick Start (Recommended)
+Educational ergonomics monitoring project split into:
 
-### Prerequisites
-- Docker Desktop installed
-- Java 17+ 
-- Maven 3.6+
+- `backend/` - Java 23 + Spring Boot (API, SSE stream, AI integration, notifications)
+- `frontend/` - React + TypeScript dashboard (real-time view, charts, AI settings)
 
-### Development Setup
+## Requirements
 
-1. **Start infrastructure services:**
-   ```bash
-   # Windows
-   .\start-dev.bat
-   
-   # Linux/Mac
-   ./start-dev.sh
-   ```
+- Java 23
+- Maven 3.9+
+- Node.js 20+ (tested on 22)
+- Docker Desktop (for PostgreSQL and optional services)
 
-2. **Or manually:**
-   ```bash
-   # Start databases
-   docker-compose up -d
-   
-   # Run application
-   mvn spring-boot:run -Dspring.profiles.active=dev
-   ```
+## Quick Start
 
-### Services
-- **Application**: http://localhost:8080
-- **PostgreSQL**: localhost:5432
-- **Ollama AI**: http://localhost:11434
-
-## 📋 Available Profiles
-
-- `dev` - Development with Docker infrastructure
-- `test` - Testing with Testcontainers
-- `prod` - Production configuration
-
-## 🧪 Testing
+1. Start infrastructure:
 
 ```bash
-# Unit tests
-mvn test
-
-# Integration tests with Testcontainers
-mvn test -Dspring.profiles.active=test
+docker-compose up -d postgres
 ```
 
-## 🛠️ Development Tools
+2. Run backend:
 
 ```bash
-# Clean & build
-mvn clean compile
-
-# Run with specific profile
+cd backend
 mvn spring-boot:run -Dspring.profiles.active=dev
-
-# Database migration
-mvn flyway:migrate
-
-# Stop all services
-docker-compose down
 ```
 
-## 📁 Project Structure
+3. Run frontend (new terminal):
 
-```
-src/
-├── main/
-│   ├── java/pl/dekrate/ergonomicsmonitor/
-│   │   ├── config/          # Spring configuration
-│   │   ├── controller/      # REST endpoints
-│   │   ├── model/           # Domain models
-│   │   ├── repository/      # Data access
-│   │   └── service/         # Business logic
-│   └── resources/
-│       ├── db/migration/    # Flyway SQL scripts
-│       └── application*.yml # Configuration files
-└── test/                    # Tests with Testcontainers
-```
-
-## 🔧 Troubleshooting
-
-### Database Connection Issues
 ```bash
-# Check if PostgreSQL is running
-docker ps | grep postgres
-
-# View logs
-docker logs ergonomics-postgres
-
-# Reset database
-docker-compose down -v
-docker-compose up -d
+cd frontend
+npm install
+npm run dev
 ```
 
-### Ollama AI Issues
-```bash
-# Check Ollama status
-curl http://localhost:11434/api/health
+Frontend default URL: `http://localhost:5173`  
+Backend default dev URL: `http://localhost:8081`
 
-# Install model manually
-docker exec -it ergonomics-ollama ollama pull bielik
+## Project Layout
+
+```text
+.
+├── backend/                  # Spring Boot application
+│   ├── pom.xml
+│   └── src/
+├── frontend/                 # React + TypeScript app
+│   ├── package.json
+│   └── src/
+├── docker-compose.yml        # Local infra (PostgreSQL, Gitea, Sonar)
+├── start-dev.bat             # Root helper (delegates to backend/start-dev.bat)
+└── start-dev.sh              # Root helper (delegates to backend/start-dev.sh)
+```
+
+## Backend Commands
+
+```bash
+mvn -f backend/pom.xml test
+mvn -f backend/pom.xml spotless:check
+mvn -f backend/pom.xml spring-boot:run -Dspring.profiles.active=dev
+```
+
+## Frontend Commands
+
+```bash
+cd frontend
+npm run dev
+npm run build
+npm run preview
 ```

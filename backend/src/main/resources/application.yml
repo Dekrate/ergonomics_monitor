@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: ergonomics-monitor
+  threads:
+    virtual:
+      enabled: true
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/ergonomics_db
+    username: postgres
+    password: password
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ergonomics_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: SpeakLeash/bielik-11b-v3.0-instruct:bf16
+        options:
+          temperature: 0.7
+          max-tokens: 500
+
+ergonomics:
+  break-check:
+    # Cron expression: every minute
+    cron: "0 * * * * *"
+  notifications:
+    windows:
+      enabled: true
+    log-only:
+      enabled: false
+  websocket:
+    enabled: true
+    path: "/ws/activity"
+  dashboard:
+    metrics:
+      cache-duration-minutes: 5
+      max-events-per-query: 1000
+  ai:
+    default-language: EN
+  security:
+    allowed-origins:
+      - http://localhost:5173
+
+logging:
+  level:
+    pl.dekrate.ergonomicsmonitor: DEBUG
+    org.flywaydb: INFO
+
