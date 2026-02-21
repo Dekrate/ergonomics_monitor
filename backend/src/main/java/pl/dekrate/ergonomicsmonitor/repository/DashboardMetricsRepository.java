@@ -55,7 +55,7 @@ public interface DashboardMetricsRepository extends R2dbcRepository<DashboardMet
             """
         SELECT * FROM dashboard_metrics
         WHERE user_id = :userId
-        AND metric_date >= CURRENT_DATE - INTERVAL ':days days'
+        AND metric_date >= CURRENT_DATE - (:days * INTERVAL '1 day')
         ORDER BY metric_date DESC
     """)
     Flux<DashboardMetricsEntity> findRecentByUserId(UUID userId, int days);
@@ -88,26 +88,15 @@ public interface DashboardMetricsRepository extends R2dbcRepository<DashboardMet
     @Query(
             """
         INSERT INTO dashboard_metrics (
-            id, user_id, metric_date, total_events, avg_intensity, max_intensity,
-            break_recommendations_count, work_duration_minutes, break_duration_minutes,
-            productivity_score, metadata, created_at, updated_at
+            id, user_id, metric_date, total_events, avg_intensity
         ) VALUES (
             :#{#entity.id}, :#{#entity.userId}, :#{#entity.metricDate}, :#{#entity.totalEvents},
-            :#{#entity.avgIntensity}, :#{#entity.maxIntensity}, :#{#entity.breakRecommendationsCount},
-            :#{#entity.workDurationMinutes}, :#{#entity.breakDurationMinutes}, :#{#entity.productivityScore},
-            :#{#entity.metadata}, :#{#entity.createdAt}, :#{#entity.updatedAt}
+            :#{#entity.avgIntensity}
         )
         ON CONFLICT (user_id, metric_date)
         DO UPDATE SET
             total_events = EXCLUDED.total_events,
-            avg_intensity = EXCLUDED.avg_intensity,
-            max_intensity = EXCLUDED.max_intensity,
-            break_recommendations_count = EXCLUDED.break_recommendations_count,
-            work_duration_minutes = EXCLUDED.work_duration_minutes,
-            break_duration_minutes = EXCLUDED.break_duration_minutes,
-            productivity_score = EXCLUDED.productivity_score,
-            metadata = EXCLUDED.metadata,
-            updated_at = EXCLUDED.updated_at
+            avg_intensity = EXCLUDED.avg_intensity
         RETURNING *
     """)
     Mono<DashboardMetricsEntity> upsert(DashboardMetricsEntity entity);
