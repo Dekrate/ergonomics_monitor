@@ -1,9 +1,13 @@
 package pl.dekrate.ergonomicsmonitor.controller;
 
+import static org.mockito.Mockito.mock;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import pl.dekrate.ergonomicsmonitor.repository.ActivityRepository;
 import pl.dekrate.ergonomicsmonitor.service.AiAssistantService;
 import pl.dekrate.ergonomicsmonitor.service.AiLanguagePreferenceService;
 
@@ -12,7 +16,9 @@ class AiSettingsControllerTest {
 
     private WebTestClient buildClient() {
         AiLanguagePreferenceService preferenceService = new AiLanguagePreferenceService("EN");
-        AiAssistantService assistantService = new AiAssistantService(null, null, preferenceService);
+        AiAssistantService assistantService =
+                new AiAssistantService(
+                        mock(ActivityRepository.class), mock(ChatClient.class), preferenceService);
         AiSettingsController controller =
                 new AiSettingsController(preferenceService, assistantService);
         return WebTestClient.bindToController(controller).build();
