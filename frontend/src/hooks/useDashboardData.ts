@@ -56,9 +56,20 @@ export function useDashboardData(userId: string, options: DashboardDataOptions) 
   }, [userId])
 
   useEffect(() => {
+    let disposed = false
     const eventSource = new EventSource(`/api/dashboard/stream/${encodeURIComponent(userId)}`)
 
+    eventSource.onopen = () => {
+      if (disposed) {
+        return
+      }
+      setState((prev) => ({ ...prev, error: null }))
+    }
+
     eventSource.onmessage = (event) => {
+      if (disposed) {
+        return
+      }
       try {
         const update = JSON.parse(event.data) as RealtimeDashboardUpdate
         const now = Date.now()
@@ -72,15 +83,21 @@ export function useDashboardData(userId: string, options: DashboardDataOptions) 
           liveEvents: [update, ...prev.liveEvents].slice(0, options.maxLiveEvents),
         }))
       } catch {
-        setState((prev) => ({ ...prev, error: 'Failed to parse realtime event payload' }))
+        setState((prev) => ({ ...prev, error: 'Realtime update is temporarily unavailable' }))
       }
     }
 
     eventSource.onerror = () => {
-      setState((prev) => ({ ...prev, error: 'Realtime connection interrupted' }))
+      if (disposed) {
+        return
+      }
+      setState((prev) => ({ ...prev, error: 'Realtime connection interrupted, retrying...' }))
     }
 
-    return () => eventSource.close()
+    return () => {
+      disposed = true
+      eventSource.close()
+    }
   }, [options.maxLiveEvents, options.minRenderGapMs, userId])
 
   const chartSeries = useMemo(
