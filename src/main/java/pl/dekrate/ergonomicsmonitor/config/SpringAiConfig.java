@@ -1,5 +1,6 @@
 package pl.dekrate.ergonomicsmonitor.config;
 
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -14,12 +15,9 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.Duration;
-
 /**
- * Spring AI configuration for Ollama.
- * Uses a robust blocking client factory to ensure 15-minute timeouts are respected
- * during long-running local LLM analysis.
+ * Spring AI configuration for Ollama. Uses a robust blocking client factory to ensure 15-minute
+ * timeouts are respected during long-running local LLM analysis.
  */
 @Configuration
 public class SpringAiConfig {
@@ -50,7 +48,8 @@ public class SpringAiConfig {
 
     @Bean
     @Primary
-    public OllamaApi ollamaApi(RestClient.Builder ollamaRestClientBuilder, WebClient.Builder ollamaWebClientBuilder) {
+    public OllamaApi ollamaApi(
+            RestClient.Builder ollamaRestClientBuilder, WebClient.Builder ollamaWebClientBuilder) {
         return new OllamaApi(baseUrl, ollamaRestClientBuilder, ollamaWebClientBuilder);
     }
 
@@ -59,10 +58,7 @@ public class SpringAiConfig {
     public OllamaChatModel ollamaChatModel(OllamaApi ollamaApi) {
         return OllamaChatModel.builder()
                 .ollamaApi(ollamaApi)
-                .defaultOptions(OllamaOptions.builder()
-                        .model(modelName)
-                        .temperature(0.7)
-                        .build())
+                .defaultOptions(OllamaOptions.builder().model(modelName).temperature(0.7).build())
                 .build();
     }
 

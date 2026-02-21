@@ -8,8 +8,8 @@ import pl.dekrate.ergonomicsmonitor.model.BreakRecommendation;
 import reactor.core.publisher.Mono;
 
 /**
- * Logging-only notifier for testing and development environments.
- * Useful when running on non-Windows platforms or when MessageBox is disruptive.
+ * Logging-only notifier for testing and development environments. Useful when running on
+ * non-Windows platforms or when MessageBox is disruptive.
  *
  * @author dekrate
  * @version 1.0
@@ -22,14 +22,18 @@ public class LoggingNotifier implements BreakNotifier {
 
     @Override
     public Mono<Void> sendNotification(BreakRecommendation recommendation) {
-        return Mono.fromRunnable(() -> {
-            log.warn("=== BREAK NOTIFICATION ===");
-            log.warn("Urgency: {}", recommendation.getUrgency());
-            log.warn("Reason: {}", recommendation.getReason());
-            log.warn("Suggested break: {} minutes", recommendation.getSuggestedBreakDuration().toMinutes());
-            log.warn("Metrics: {}", recommendation.getMetrics());
-            log.warn("=========================");
-        }).then();
+        return Mono.fromRunnable(
+                        () -> {
+                            log.warn("=== BREAK NOTIFICATION ===");
+                            log.warn("Urgency: {}", recommendation.getUrgency());
+                            log.warn("Reason: {}", recommendation.getReason());
+                            log.warn(
+                                    "Suggested break: {} minutes",
+                                    recommendation.getSuggestedBreakDuration().toMinutes());
+                            log.warn("Metrics: {}", recommendation.getMetrics());
+                            log.warn("=========================");
+                        })
+                .then();
     }
 
     @Override

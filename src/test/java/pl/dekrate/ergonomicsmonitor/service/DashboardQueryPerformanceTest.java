@@ -1,5 +1,9 @@
 package pl.dekrate.ergonomicsmonitor.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.util.UUID;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +18,11 @@ import pl.dekrate.ergonomicsmonitor.model.DashboardMetricsEntity;
 import pl.dekrate.ergonomicsmonitor.repository.DashboardMetricsRepository;
 import reactor.test.StepVerifier;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Integration test demonstrating performance comparison between declarative methods and @Query.
- * <p>
- * This test proves that declarative methods have ZERO performance overhead
- * compared to handwritten SQL queries in Spring Data R2DBC.
+ *
+ * <p>This test proves that declarative methods have ZERO performance overhead compared to
+ * handwritten SQL queries in Spring Data R2DBC.
  *
  * @author dekrate
  * @version 1.0
@@ -33,15 +32,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Disabled("Disabled due to known npipe:// character issue in Testcontainers on Windows")
 class DashboardQueryPerformanceTest {
 
-    @Container
-    @ServiceConnection
+    @Container @ServiceConnection
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
-    @Autowired
-    private DashboardMetricsRepository repository;
+    @Autowired private DashboardMetricsRepository repository;
 
-    @Autowired
-    private DashboardQueryComparisonService service;
+    @Autowired private DashboardQueryComparisonService service;
 
     @Test
     void shouldDemonstrateDeclarativeVsQueryPerformance() {
@@ -55,12 +51,12 @@ class DashboardQueryPerformanceTest {
 
         // When - save test data and compare query approaches
         StepVerifier.create(
-                repository.save(todayMetrics)
-                        .then(repository.save(yesterdayMetrics))
-                        .then(demonstrateQueryComparison(userId))
-        )
-        .expectComplete()
-        .verify();
+                        repository
+                                .save(todayMetrics)
+                                .then(repository.save(yesterdayMetrics))
+                                .then(demonstrateQueryComparison(userId)))
+                .expectComplete()
+                .verify();
     }
 
     @Test
@@ -71,13 +67,15 @@ class DashboardQueryPerformanceTest {
         DashboardMetricsEntity metrics = createTestMetrics(userId, date);
 
         // When & Then - declarative methods are perfect for simple queries
-        repository.save(metrics)
+        repository
+                .save(metrics)
                 .then(service.getMetricsForUserAndDate(userId, date))
                 .as(StepVerifier::create)
-                .assertNext(found -> {
-                    assertThat(found.getUserId()).isEqualTo(userId);
-                    assertThat(found.getMetricDate()).isEqualTo(date);
-                })
+                .assertNext(
+                        found -> {
+                            assertThat(found.getUserId()).isEqualTo(userId);
+                            assertThat(found.getMetricDate()).isEqualTo(date);
+                        })
                 .verifyComplete();
     }
 
@@ -92,15 +90,17 @@ class DashboardQueryPerformanceTest {
         DashboardMetricsEntity day3 = createTestMetrics(userId, today);
 
         // When & Then - @Query is REQUIRED for aggregations
-        repository.save(day1)
+        repository
+                .save(day1)
                 .then(repository.save(day2))
                 .then(repository.save(day3))
                 .then(service.calculateAverageProductivity(userId, today.minusDays(2), today))
                 .as(StepVerifier::create)
-                .assertNext(avgScore -> {
-                    // Average of 80.0, 90.0, 100.0 = 90.0
-                    assertThat(avgScore).isEqualTo(90.0);
-                })
+                .assertNext(
+                        avgScore -> {
+                            // Average of 80.0, 90.0, 100.0 = 90.0
+                            assertThat(avgScore).isEqualTo(90.0);
+                        })
                 .verifyComplete();
     }
 
@@ -109,26 +109,30 @@ class DashboardQueryPerformanceTest {
         // When & Then
         service.demonstrateBestPractices(UUID.randomUUID())
                 .as(StepVerifier::create)
-                .assertNext(guide -> {
-                    assertThat(guide).contains("USE DECLARATIVE for:");
-                    assertThat(guide).contains("USE @QUERY for:");
-                    assertThat(guide).contains("Performance = identical");
-                    assertThat(guide).contains("DECISION MATRIX:");
-                })
+                .assertNext(
+                        guide -> {
+                            assertThat(guide).contains("USE DECLARATIVE for:");
+                            assertThat(guide).contains("USE @QUERY for:");
+                            assertThat(guide).contains("Performance = identical");
+                            assertThat(guide).contains("DECISION MATRIX:");
+                        })
                 .verifyComplete();
     }
 
     private reactor.core.publisher.Mono<Void> demonstrateQueryComparison(UUID userId) {
         return service.performanceComparisonExample(userId)
-                .doOnSuccess(_ -> System.out.println("""
-                        
+                .doOnSuccess(
+                        _ ->
+                                System.out.println(
+                                        """
+
                         🎯 PERFORMANCE ANALYSIS COMPLETE:
                         =====================================
                         ✅ Declarative methods: Zero overhead, Spring-generated SQL
                         🔧 @Query methods: Full control, hand-optimized SQL
                         ⚡ Performance: IDENTICAL in most cases
                         🧠 Choice: Based on complexity and readability needs
-                        
+
                         RECOMMENDATION: Start with declarative, use @Query when needed!
                         """));
     }

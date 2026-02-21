@@ -4,18 +4,17 @@ import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Value Object encapsulating metrics about activity intensity over a time period.
- * Immutable and contains derived calculations for ergonomic analysis.
- * <p>
- * All public methods are part of the Value Object API and are used by:
- * - Domain services (PomodoroIntensityStrategy)
- * - Notification adapters (WindowsNativeNotifier)
- * - Unit tests (ActivityIntensityMetricsTest)
+ * Value Object encapsulating metrics about activity intensity over a time period. Immutable and
+ * contains derived calculations for ergonomic analysis.
+ *
+ * <p>All public methods are part of the Value Object API and are used by: - Domain services
+ * (PomodoroIntensityStrategy) - Notification adapters (WindowsNativeNotifier) - Unit tests
+ * (ActivityIntensityMetricsTest)
  *
  * @author dekrate
  * @version 1.0
  */
-//@SuppressWarnings("java:S1450") // Public API methods used by multiple components
+// @SuppressWarnings("java:S1450") // Public API methods used by multiple components
 public final class ActivityIntensityMetrics {
 
     private final long totalEvents;
@@ -73,8 +72,8 @@ public final class ActivityIntensityMetrics {
     }
 
     /**
-     * Determines if the activity level is critical (extremely high).
-     * Threshold: >200 events per minute requires immediate attention.
+     * Determines if the activity level is critical (extremely high). Threshold: >200 events per
+     * minute requires immediate attention.
      */
     public boolean isCritical() {
         return eventsPerMinute > 200.0;
@@ -86,9 +85,9 @@ public final class ActivityIntensityMetrics {
         if (o == null || getClass() != o.getClass()) return false;
         ActivityIntensityMetrics that = (ActivityIntensityMetrics) o;
         return totalEvents == that.totalEvents
-            && keyboardEvents == that.keyboardEvents
-            && mouseEvents == that.mouseEvents
-            && Objects.equals(timeWindow, that.timeWindow);
+                && keyboardEvents == that.keyboardEvents
+                && mouseEvents == that.mouseEvents
+                && Objects.equals(timeWindow, that.timeWindow);
     }
 
     @Override
@@ -98,13 +97,18 @@ public final class ActivityIntensityMetrics {
 
     @Override
     public String toString() {
-        return "ActivityIntensityMetrics{" +
-                "totalEvents=" + totalEvents +
-                ", keyboardEvents=" + keyboardEvents +
-                ", mouseEvents=" + mouseEvents +
-                ", timeWindow=" + timeWindow +
-                ", eventsPerMinute=" + String.format("%.2f", eventsPerMinute) +
-                '}';
+        return "ActivityIntensityMetrics{"
+                + "totalEvents="
+                + totalEvents
+                + ", keyboardEvents="
+                + keyboardEvents
+                + ", mouseEvents="
+                + mouseEvents
+                + ", timeWindow="
+                + timeWindow
+                + ", eventsPerMinute="
+                + String.format("%.2f", eventsPerMinute)
+                + '}';
     }
 
     public static class Builder {
@@ -140,4 +144,3 @@ public final class ActivityIntensityMetrics {
         }
     }
 }
-

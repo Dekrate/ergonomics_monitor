@@ -1,5 +1,14 @@
 package pl.dekrate.ergonomicsmonitor.service.strategy;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,29 +19,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import pl.dekrate.ergonomicsmonitor.ActivityEvent;
-import pl.dekrate.ergonomicsmonitor.model.ActivityIntensityMetrics;
 import pl.dekrate.ergonomicsmonitor.model.ActivityType;
-import pl.dekrate.ergonomicsmonitor.model.BreakRecommendation;
 import pl.dekrate.ergonomicsmonitor.model.BreakUrgency;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AI Break Recommendation Strategy Tests")
 class AIBreakRecommendationStrategyTest {
 
-    @Mock
-    private ChatClient chatClient;
+    @Mock private ChatClient chatClient;
 
     private AIBreakRecommendationStrategy strategy;
 
@@ -45,11 +40,9 @@ class AIBreakRecommendationStrategyTest {
     @DisplayName("Should return empty Mono when events list is null or empty")
     void shouldReturnEmptyMonoWhenEventsListIsNullOrEmpty() {
         // When & Then
-        StepVerifier.create(strategy.analyze(null))
-                .verifyComplete();
+        StepVerifier.create(strategy.analyze(null)).verifyComplete();
 
-        StepVerifier.create(strategy.analyze(Collections.emptyList()))
-                .verifyComplete();
+        StepVerifier.create(strategy.analyze(Collections.emptyList())).verifyComplete();
     }
 
     @Nested
@@ -60,12 +53,10 @@ class AIBreakRecommendationStrategyTest {
         @DisplayName("Should return recommendation when AI suggests a break")
         void shouldReturnRecommendationWhenAiSuggestsBreak() {
             // Given
-            List<ActivityEvent> events = List.of(
-                    createEvent(150.0),
-                    createEvent(180.0)
-            );
+            List<ActivityEvent> events = List.of(createEvent(150.0), createEvent(180.0));
 
-            String aiJsonResponse = """
+            String aiJsonResponse =
+                    """
                     {
                         "needsBreak": true,
                         "urgency": "CRITICAL",
@@ -78,11 +69,14 @@ class AIBreakRecommendationStrategyTest {
 
             // When & Then
             StepVerifier.create(strategy.analyze(events))
-                    .assertNext(recommendation -> {
-                        assertThat(recommendation.getUrgency()).isEqualTo(BreakUrgency.CRITICAL);
-                        assertThat(recommendation.getDurationMinutes()).isEqualTo(15);
-                        assertThat(recommendation.getReason()).contains("Very high intensity detected");
-                    })
+                    .assertNext(
+                            recommendation -> {
+                                assertThat(recommendation.getUrgency())
+                                        .isEqualTo(BreakUrgency.CRITICAL);
+                                assertThat(recommendation.getDurationMinutes()).isEqualTo(15);
+                                assertThat(recommendation.getReason())
+                                        .contains("Very high intensity detected");
+                            })
                     .verifyComplete();
         }
 
@@ -91,7 +85,8 @@ class AIBreakRecommendationStrategyTest {
         void shouldReturnEmptyMonoWhenAiSaysNoBreakNeeded() {
             // Given
             List<ActivityEvent> events = List.of(createEvent(50.0));
-            String aiJsonResponse = """
+            String aiJsonResponse =
+                    """
                     {
                         "needsBreak": false
                     }
@@ -100,18 +95,14 @@ class AIBreakRecommendationStrategyTest {
             mockChatClientCall(aiJsonResponse);
 
             // When & Then
-            StepVerifier.create(strategy.analyze(events))
-                    .verifyComplete();
+            StepVerifier.create(strategy.analyze(events)).verifyComplete();
         }
 
         @Test
         @DisplayName("Should use fallback when AI response is incomplete")
         void shouldUseFallbackWhenAiResponseIsIncomplete() {
             // Given
-            List<ActivityEvent> events = List.of(
-                    createEvent(200.0),
-                    createEvent(220.0)
-            );
+            List<ActivityEvent> events = List.of(createEvent(200.0), createEvent(220.0));
             // Contains needsBreak: true but missing urgency and others
             String incompleteResponse = "{ \"needsBreak\": true }";
 
@@ -119,10 +110,13 @@ class AIBreakRecommendationStrategyTest {
 
             // When & Then
             StepVerifier.create(strategy.analyze(events))
-                    .assertNext(recommendation -> {
-                        assertThat(recommendation.getReason()).contains("fallback analysis");
-                        assertThat(recommendation.getUrgency()).isEqualTo(BreakUrgency.CRITICAL);
-                    })
+                    .assertNext(
+                            recommendation -> {
+                                assertThat(recommendation.getReason())
+                                        .contains("fallback analysis");
+                                assertThat(recommendation.getUrgency())
+                                        .isEqualTo(BreakUrgency.CRITICAL);
+                            })
                     .verifyComplete();
         }
 
@@ -132,16 +126,20 @@ class AIBreakRecommendationStrategyTest {
             // Given
             List<ActivityEvent> events = List.of(createEvent(100.0));
 
-            ChatClient.ChatClientRequestSpec requestSpec = mock(ChatClient.ChatClientRequestSpec.class);
+            ChatClient.ChatClientRequestSpec requestSpec =
+                    mock(ChatClient.ChatClientRequestSpec.class);
             when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
             when(requestSpec.call()).thenThrow(new RuntimeException("AI Service Down"));
 
             // When & Then
             StepVerifier.create(strategy.analyze(events))
-                    .assertNext(recommendation -> {
-                        assertThat(recommendation.getReason()).contains("fallback analysis");
-                        assertThat(recommendation.getUrgency()).isEqualTo(BreakUrgency.MEDIUM);
-                    })
+                    .assertNext(
+                            recommendation -> {
+                                assertThat(recommendation.getReason())
+                                        .contains("fallback analysis");
+                                assertThat(recommendation.getUrgency())
+                                        .isEqualTo(BreakUrgency.MEDIUM);
+                            })
                     .verifyComplete();
         }
     }

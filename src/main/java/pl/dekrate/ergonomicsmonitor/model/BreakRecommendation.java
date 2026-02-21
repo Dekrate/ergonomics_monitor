@@ -5,8 +5,8 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Value Object representing a break recommendation based on activity analysis.
- * Immutable by design following DDD principles.
+ * Value Object representing a break recommendation based on activity analysis. Immutable by design
+ * following DDD principles.
  *
  * @author dekrate
  * @version 1.0
@@ -23,7 +23,9 @@ public final class BreakRecommendation {
         this.timestamp = Objects.requireNonNull(builder.timestamp, "timestamp cannot be null");
         this.urgency = Objects.requireNonNull(builder.urgency, "urgency cannot be null");
         this.reason = Objects.requireNonNull(builder.reason, "reason cannot be null");
-        this.suggestedBreakDuration = Objects.requireNonNull(builder.suggestedBreakDuration, "suggestedBreakDuration cannot be null");
+        this.suggestedBreakDuration =
+                Objects.requireNonNull(
+                        builder.suggestedBreakDuration, "suggestedBreakDuration cannot be null");
         this.metrics = Objects.requireNonNull(builder.metrics, "metrics cannot be null");
     }
 
@@ -53,6 +55,7 @@ public final class BreakRecommendation {
 
     /**
      * Convenience method to get break duration in minutes.
+     *
      * @return duration in minutes
      */
     public int getDurationMinutes() {
@@ -65,8 +68,8 @@ public final class BreakRecommendation {
         if (o == null || getClass() != o.getClass()) return false;
         BreakRecommendation that = (BreakRecommendation) o;
         return Objects.equals(timestamp, that.timestamp)
-            && urgency == that.urgency
-            && Objects.equals(reason, that.reason);
+                && urgency == that.urgency
+                && Objects.equals(reason, that.reason);
     }
 
     @Override
@@ -76,13 +79,19 @@ public final class BreakRecommendation {
 
     @Override
     public String toString() {
-        return "BreakRecommendation{" +
-                "timestamp=" + timestamp +
-                ", urgency=" + urgency +
-                ", reason='" + reason + '\'' +
-                ", suggestedBreakDuration=" + suggestedBreakDuration +
-                ", metrics=" + metrics +
-                '}';
+        return "BreakRecommendation{"
+                + "timestamp="
+                + timestamp
+                + ", urgency="
+                + urgency
+                + ", reason='"
+                + reason
+                + '\''
+                + ", suggestedBreakDuration="
+                + suggestedBreakDuration
+                + ", metrics="
+                + metrics
+                + '}';
     }
 
     public static class Builder {
@@ -116,6 +125,7 @@ public final class BreakRecommendation {
 
         /**
          * Convenience method to set break duration in minutes.
+         *
          * @param minutes duration in minutes
          * @return this builder
          */
@@ -134,4 +144,3 @@ public final class BreakRecommendation {
         }
     }
 }
-

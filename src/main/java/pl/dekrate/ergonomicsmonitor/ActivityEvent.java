@@ -1,5 +1,9 @@
 package pl.dekrate.ergonomicsmonitor;
 
+import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.Transient;
@@ -7,32 +11,31 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 import pl.dekrate.ergonomicsmonitor.model.ActivityType;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-
 /**
- * Domain entity representing a captured or aggregated activity event.
- * Maps to the <code>activity_events</code> table in the PostgreSQL database.
- * <p>
- * Supports both raw hardware events and aggregated summary events.
+ * Domain entity representing a captured or aggregated activity event. Maps to the <code>
+ * activity_events</code> table in the PostgreSQL database.
+ *
+ * <p>Supports both raw hardware events and aggregated summary events.
  */
 @Table("activity_events")
 public final class ActivityEvent implements Persistable<UUID> {
 
-    @Id
-    private final UUID id;
+    @Id private final UUID id;
     private final UUID userId;
     private final Instant timestamp;
     private final ActivityType type;
     private final double intensity;
     private final Map<String, Object> metadata;
-    @Transient
-    private final boolean isNew;
+    @Transient private final boolean isNew;
 
     @PersistenceCreator
-    public ActivityEvent(UUID id, UUID userId, Instant timestamp, ActivityType type, double intensity, Map<String, Object> metadata) {
+    public ActivityEvent(
+            UUID id,
+            UUID userId,
+            Instant timestamp,
+            ActivityType type,
+            double intensity,
+            Map<String, Object> metadata) {
         this.id = id;
         this.userId = userId;
         this.timestamp = Objects.requireNonNull(timestamp, "timestamp cannot be null");
@@ -81,7 +84,6 @@ public final class ActivityEvent implements Persistable<UUID> {
         return metadata;
     }
 
-
     @Override
     public boolean isNew() {
         return isNew;
@@ -102,14 +104,20 @@ public final class ActivityEvent implements Persistable<UUID> {
 
     @Override
     public String toString() {
-        return "ActivityEvent{" +
-                "id=" + id +
-                ", userId=" + userId +
-                ", timestamp=" + timestamp +
-                ", type=" + type +
-                ", intensity=" + intensity +
-                ", metadata=" + metadata +
-                '}';
+        return "ActivityEvent{"
+                + "id="
+                + id
+                + ", userId="
+                + userId
+                + ", timestamp="
+                + timestamp
+                + ", type="
+                + type
+                + ", intensity="
+                + intensity
+                + ", metadata="
+                + metadata
+                + '}';
     }
 
     public static class Builder {

@@ -4,13 +4,11 @@ import pl.dekrate.ergonomicsmonitor.model.BreakRecommendation;
 import reactor.core.publisher.Mono;
 
 /**
- * Port interface for sending break notifications to users.
- * Implements Hexagonal Architecture (Ports & Adapters pattern).
- * <p>
- * This abstraction allows:
- * - Multiple notification implementations (Windows, Email, SMS, etc.)
- * - Easy testing with mock implementations
- * - Runtime switching between notification methods
+ * Port interface for sending break notifications to users. Implements Hexagonal Architecture (Ports
+ * & Adapters pattern).
+ *
+ * <p>This abstraction allows: - Multiple notification implementations (Windows, Email, SMS, etc.) -
+ * Easy testing with mock implementations - Runtime switching between notification methods
  *
  * @author dekrate
  * @version 1.0
@@ -32,4 +30,3 @@ public interface BreakNotifier {
      */
     String getNotifierType();
 }
-

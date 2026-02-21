@@ -1,5 +1,10 @@
 package pl.dekrate.ergonomicsmonitor.service.strategy;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -11,25 +16,16 @@ import pl.dekrate.ergonomicsmonitor.model.ActivityIntensityMetrics;
 import pl.dekrate.ergonomicsmonitor.model.BreakRecommendation;
 import pl.dekrate.ergonomicsmonitor.model.BreakUrgency;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import reactor.core.scheduler.Schedulers;
 
 /**
  * AI-powered break recommendation strategy using Ollama LLM.
- * <p>
- * Analyzes activity patterns using artificial intelligence to provide
- * intelligent and personalized break recommendations based on:
- * - Activity intensity patterns
- * - Work duration analysis
- * - Ergonomic risk assessment
- * - Personalized recommendations
- * <p>
- * Implements Strategy pattern for pluggable AI analysis.
+ *
+ * <p>Analyzes activity patterns using artificial intelligence to provide intelligent and
+ * personalized break recommendations based on: - Activity intensity patterns - Work duration
+ * analysis - Ergonomic risk assessment - Personalized recommendations
+ *
+ * <p>Implements Strategy pattern for pluggable AI analysis.
  *
  * @author dekrate
  * @version 1.0
@@ -40,20 +36,21 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
 
     private static final Logger log = LoggerFactory.getLogger(AIBreakRecommendationStrategy.class);
 
-    private static final String ANALYSIS_PROMPT = """
+    private static final String ANALYSIS_PROMPT =
+            """
         Jesteś ekspertem ds. ergonomii pracy przy komputerze. Przeanalizuj poniższe dane aktywności użytkownika:
-        
+
         Statystyki aktywności (ostatnie {timeWindow} minut):
         - Łączna liczba zdarzeń: {totalEvents}
         - Średnia intensywność: {avgIntensity}
         - Maksymalna intensywność: {maxIntensity}
         - Czas pracy: {workDurationMinutes} minut
-        
+
         Wzorce aktywności:
         {activityPatterns}
-        
+
         Na podstawie tych danych, oceń ryzyko problemów ergonomicznych i zaleć przerwę jeśli to konieczne.
-        
+
         Odpowiedz TYLKO w formacie JSON:
         {{
             "needsBreak": true/false,
@@ -79,13 +76,20 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
         return Mono.fromCallable(() -> prepareAnalysisData(events))
                 .flatMap(this::queryAI)
                 .flatMap(this::parseAIResponse)
-                .doOnNext(rec -> log.info("AI recommendation: {} urgency, {} minutes break",
-                    rec.getUrgency(), rec.getDurationMinutes()))
+                .doOnNext(
+                        rec ->
+                                log.info(
+                                        "AI recommendation: {} urgency, {} minutes break",
+                                        rec.getUrgency(),
+                                        rec.getDurationMinutes()))
                 .doOnError(error -> log.error("AI analysis failed", error))
-                .onErrorResume(error -> {
-                    log.warn("Falling back to heuristic analysis due to AI error: {}", error.getMessage());
-                    return fallbackAnalysis(events);
-                });
+                .onErrorResume(
+                        error -> {
+                            log.warn(
+                                    "Falling back to heuristic analysis due to AI error: {}",
+                                    error.getMessage());
+                            return fallbackAnalysis(events);
+                        });
     }
 
     @Override
@@ -95,102 +99,108 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
 
     private Map<String, Object> prepareAnalysisData(List<ActivityEvent> events) {
         Instant now = Instant.now();
-        Instant earliest = events.stream()
-                .map(ActivityEvent::getTimestamp)
-                .min(Instant::compareTo)
-                .orElse(now);
+        Instant earliest =
+                events.stream()
+                        .map(ActivityEvent::getTimestamp)
+                        .min(Instant::compareTo)
+                        .orElse(now);
 
         long timeWindowMinutes = Duration.between(earliest, now).toMinutes();
-        double avgIntensity = events.stream()
-                .mapToDouble(ActivityEvent::getIntensity)
-                .average()
-                .orElse(0.0);
+        double avgIntensity =
+                events.stream().mapToDouble(ActivityEvent::getIntensity).average().orElse(0.0);
 
-        double maxIntensity = events.stream()
-                .mapToDouble(ActivityEvent::getIntensity)
-                .max()
-                .orElse(0.0);
+        double maxIntensity =
+                events.stream().mapToDouble(ActivityEvent::getIntensity).max().orElse(0.0);
 
-        String patterns = events.stream()
-                .map(event -> String.format("%.1f intensity at %s",
-                    event.getIntensity(), event.getTimestamp()))
-                .limit(10) // Limit to avoid token overflow
-                .collect(Collectors.joining("\n- ", "- ", ""));
+        String patterns =
+                events.stream()
+                        .map(
+                                event ->
+                                        String.format(
+                                                "%.1f intensity at %s",
+                                                event.getIntensity(), event.getTimestamp()))
+                        .limit(10) // Limit to avoid token overflow
+                        .collect(Collectors.joining("\n- ", "- ", ""));
 
         return Map.of(
-            "timeWindow", timeWindowMinutes,
-            "totalEvents", events.size(),
-            "avgIntensity", String.format("%.2f", avgIntensity),
-            "maxIntensity", String.format("%.2f", maxIntensity),
-            "workDurationMinutes", timeWindowMinutes,
-            "activityPatterns", patterns
-        );
+                "timeWindow",
+                timeWindowMinutes,
+                "totalEvents",
+                events.size(),
+                "avgIntensity",
+                String.format("%.2f", avgIntensity),
+                "maxIntensity",
+                String.format("%.2f", maxIntensity),
+                "workDurationMinutes",
+                timeWindowMinutes,
+                "activityPatterns",
+                patterns);
     }
 
-
-
     private Mono<String> queryAI(Map<String, Object> analysisData) {
-        return Mono.fromCallable(() -> {
-            long startTime = System.currentTimeMillis();
-            log.info(">>> [AI START] Sending data to Ollama (Bielik). This might take several minutes...");
-            log.debug("Analysis Data: {}", analysisData);
+        return Mono.fromCallable(
+                        () -> {
+                            long startTime = System.currentTimeMillis();
+                            log.info(
+                                    ">>> [AI START] Sending data to Ollama (Bielik). This might take several minutes...");
+                            log.debug("Analysis Data: {}", analysisData);
 
-            PromptTemplate promptTemplate = new PromptTemplate(ANALYSIS_PROMPT);
-            Prompt prompt = promptTemplate.create(analysisData);
+                            PromptTemplate promptTemplate = new PromptTemplate(ANALYSIS_PROMPT);
+                            Prompt prompt = promptTemplate.create(analysisData);
 
-            String content = chatClient.prompt(prompt)
-                    .call()
-                    .content();
-            
-            long duration = (System.currentTimeMillis() - startTime) / 1000;
-            log.info("<<< [AI FINISH] Received response from Ollama in {} seconds", duration);
-            return content;
-        })
-        .subscribeOn(Schedulers.boundedElastic())
-        .doOnNext(response -> log.debug("AI response: {}", response));
+                            String content = chatClient.prompt(prompt).call().content();
+
+                            long duration = (System.currentTimeMillis() - startTime) / 1000;
+                            log.info(
+                                    "<<< [AI FINISH] Received response from Ollama in {} seconds",
+                                    duration);
+                            return content;
+                        })
+                .subscribeOn(Schedulers.boundedElastic())
+                .doOnNext(response -> log.debug("AI response: {}", response));
     }
 
     private Mono<BreakRecommendation> parseAIResponse(String aiResponse) {
-        return Mono.fromCallable(() -> {
-            try {
-                // Simple JSON parsing - in production use Jackson ObjectMapper
-                String cleaned = aiResponse.trim()
-                        .replace("```json", "")
-                        .replace("```", "")
-                        .trim();
+        return Mono.fromCallable(
+                () -> {
+                    try {
+                        // Simple JSON parsing - in production use Jackson ObjectMapper
+                        String cleaned =
+                                aiResponse.trim().replace("```json", "").replace("```", "").trim();
 
-                log.debug("Parsing AI response: {}", cleaned);
+                        log.debug("Parsing AI response: {}", cleaned);
 
-                // Extract values using simple string parsing
-                boolean needsBreak = cleaned.contains("\"needsBreak\": true");
+                        // Extract values using simple string parsing
+                        boolean needsBreak = cleaned.contains("\"needsBreak\": true");
 
-                if (!needsBreak) {
-                    return null; // No break needed
-                }
+                        if (!needsBreak) {
+                            return null; // No break needed
+                        }
 
-                String urgencyStr = extractJsonValue(cleaned, "urgency");
-                String durationStr = extractJsonValue(cleaned, "durationMinutes");
-                String reason = extractJsonValue(cleaned, "reason");
+                        String urgencyStr = extractJsonValue(cleaned, "urgency");
+                        String durationStr = extractJsonValue(cleaned, "durationMinutes");
+                        String reason = extractJsonValue(cleaned, "reason");
 
-                BreakUrgency urgency = parseUrgency(urgencyStr);
-                int duration = Integer.parseInt(durationStr.replace("[^0-9]", ""));
+                        BreakUrgency urgency = parseUrgency(urgencyStr);
+                        int duration = Integer.parseInt(durationStr.replace("[^0-9]", ""));
 
-                return BreakRecommendation.builder()
-                        .timestamp(Instant.now())
-                        .urgency(urgency)
-                        .durationMinutes(duration)
-                        .reason("AI Analysis: " + reason)
-                        .metrics(ActivityIntensityMetrics.builder()
-                                .totalEvents(0)
-                                .timeWindow(Duration.ofMinutes(duration))
-                                .build())
-                        .build();
+                        return BreakRecommendation.builder()
+                                .timestamp(Instant.now())
+                                .urgency(urgency)
+                                .durationMinutes(duration)
+                                .reason("AI Analysis: " + reason)
+                                .metrics(
+                                        ActivityIntensityMetrics.builder()
+                                                .totalEvents(0)
+                                                .timeWindow(Duration.ofMinutes(duration))
+                                                .build())
+                                .build();
 
-            } catch (Exception e) {
-                log.error("Failed to parse AI response: {}", aiResponse, e);
-                throw new IllegalArgumentException("Invalid AI response format", e);
-            }
-        });
+                    } catch (Exception e) {
+                        log.error("Failed to parse AI response: {}", aiResponse, e);
+                        throw new IllegalArgumentException("Invalid AI response format", e);
+                    }
+                });
     }
 
     private String extractJsonValue(String json, String key) {
@@ -214,37 +224,37 @@ public final class AIBreakRecommendationStrategy implements IntensityAnalysisStr
         }
     }
 
-    /**
-     * Fallback analysis when AI fails - uses simple heuristics.
-     */
+    /** Fallback analysis when AI fails - uses simple heuristics. */
     private Mono<BreakRecommendation> fallbackAnalysis(List<ActivityEvent> events) {
-        double avgIntensity = events.stream()
-                .mapToDouble(ActivityEvent::getIntensity)
-                .average()
-                .orElse(0.0);
+        double avgIntensity =
+                events.stream().mapToDouble(ActivityEvent::getIntensity).average().orElse(0.0);
 
         if (avgIntensity > 150.0) {
-            return Mono.just(BreakRecommendation.builder()
-                    .timestamp(Instant.now())
-                    .urgency(BreakUrgency.CRITICAL)
-                    .durationMinutes(10)
-                    .reason("High intensity detected - fallback analysis")
-                    .metrics(ActivityIntensityMetrics.builder()
-                            .totalEvents(events.size())
-                            .timeWindow(Duration.ofMinutes(10))
-                            .build())
-                    .build());
+            return Mono.just(
+                    BreakRecommendation.builder()
+                            .timestamp(Instant.now())
+                            .urgency(BreakUrgency.CRITICAL)
+                            .durationMinutes(10)
+                            .reason("High intensity detected - fallback analysis")
+                            .metrics(
+                                    ActivityIntensityMetrics.builder()
+                                            .totalEvents(events.size())
+                                            .timeWindow(Duration.ofMinutes(10))
+                                            .build())
+                            .build());
         } else if (avgIntensity > 75.0) {
-            return Mono.just(BreakRecommendation.builder()
-                    .timestamp(Instant.now())
-                    .urgency(BreakUrgency.MEDIUM)
-                    .durationMinutes(5)
-                    .reason("Moderate intensity detected - fallback analysis")
-                    .metrics(ActivityIntensityMetrics.builder()
-                            .totalEvents(events.size())
-                            .timeWindow(Duration.ofMinutes(5))
-                            .build())
-                    .build());
+            return Mono.just(
+                    BreakRecommendation.builder()
+                            .timestamp(Instant.now())
+                            .urgency(BreakUrgency.MEDIUM)
+                            .durationMinutes(5)
+                            .reason("Moderate intensity detected - fallback analysis")
+                            .metrics(
+                                    ActivityIntensityMetrics.builder()
+                                            .totalEvents(events.size())
+                                            .timeWindow(Duration.ofMinutes(5))
+                                            .build())
+                            .build());
         }
 
         return Mono.empty();
